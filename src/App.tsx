@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Layout } from "@/components/layout/Layout";
-import { SkipToContent } from "@/components/ui/SkipToContent";
 import { LoadingFallback } from "@/components/ui/LoadingFallback";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -14,10 +13,13 @@ import { lazy, Suspense } from "react";
 
 // Code-split route components for better performance
 const Index = lazy(() => import("./pages/Index"));
-const Portfolio = lazy(() => import("./pages/Portfolio"));
+const Projects = lazy(() => import("./pages/Projects"));
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
 const About = lazy(() => import("./pages/About"));
-const Contact = lazy(() => import("./pages/Contact"));
+const Login = lazy(() => import("./pages/Login"));
+const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -37,18 +39,34 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/portfolio"
+          path="/projects"
           element={
             <PageTransition>
-              <Portfolio />
+              <Projects />
             </PageTransition>
           }
         />
         <Route
-          path="/project/:slug"
+          path="/projects/:slug"
           element={
             <PageTransition>
               <ProjectDetail />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/blog"
+          element={
+            <PageTransition>
+              <Blog />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/blog/:slug"
+          element={
+            <PageTransition>
+              <BlogPost />
             </PageTransition>
           }
         />
@@ -61,10 +79,18 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/contact"
+          path="/login"
           element={
             <PageTransition>
-              <Contact />
+              <Login />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <PageTransition>
+              <Admin />
             </PageTransition>
           }
         />
@@ -89,7 +115,6 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <SkipToContent />
             <Layout>
               <Suspense fallback={<LoadingFallback />}>
                 <AnimatedRoutes />

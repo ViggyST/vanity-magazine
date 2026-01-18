@@ -1,82 +1,54 @@
 import { motion } from 'framer-motion';
-import { photographerInfo } from '@/data/photographer';
-import { getFeaturedProjects } from '@/data/projects';
-import { ProjectCard } from '@/components/portfolio/ProjectCard';
+import { siteConfig } from '@/data/siteConfig';
 import { ScrollIndicator } from '@/components/ui/ScrollIndicator';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
-import { SEOHead } from '@/components/seo/SEOHead';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 /**
- * Homepage with immersive hero section and featured projects grid
- * Showcases photographer's best work with minimal, elegant design
+ * Homepage with immersive hero section
+ * Kino-inspired: typography-first, dark editorial, premium spacing
+ * Fraunces for display headings, Inter for body
  */
 export default function Home() {
-  const featuredProjects = getFeaturedProjects();
-
   return (
-    <>
-      <SEOHead />
-      
-      <div className="min-h-screen">
-        {/* Hero Section - Full viewport with featured image */}
+    <div className="min-h-screen">
+      {/* Hero Section - Full viewport with dark gradient */}
       <section className="relative h-screen w-full overflow-hidden">
-        {/* Background Video */}
-        <div className="absolute inset-0">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            poster="https://images.pexels.com/videos/2675516/free-video-2675516.jpg?auto=compress&cs=tinysrgb&fit=crop&h=630&w=1200"
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              const target = e.currentTarget;
-              target.style.opacity = '0';
-            }}
-          >
-            <source src="https://videos.pexels.com/video-files/2675516/2675516-sd_960_540_24fps.mp4" type="video/mp4" />
-          </video>
-          {/* Video from Pexels */}
-          {/* Gradient Overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
-        </div>
+        {/* Dark gradient background - placeholder for cinematic image */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
+        
+        {/* Subtle texture overlay */}
+        <div className="absolute inset-0 opacity-[0.02]" 
+          style={{ 
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")',
+          }} 
+        />
 
         {/* Hero Content */}
         <div className="relative h-full flex flex-col items-center justify-center px-6">
           <motion.div
-            className="text-center space-y-6 max-w-4xl"
+            className="text-center space-y-8 max-w-4xl"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
           >
             <motion.h1
-              className="text-6xl md:text-8xl lg:text-9xl font-extralight tracking-widest text-white"
+              className="text-display-xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.2 }}
             >
-              {photographerInfo.name.toUpperCase()}
+              {siteConfig.hero.headline}
             </motion.h1>
             
             <motion.p
-              className="text-xl md:text-2xl font-light tracking-wide text-white/90"
+              className="text-body-lg text-muted-foreground max-w-xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.4 }}
             >
-              {photographerInfo.tagline}
-            </motion.p>
-
-            <motion.p
-              className="text-base md:text-lg font-light leading-relaxed text-white/80 max-w-2xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.6 }}
-            >
-              {photographerInfo.heroIntroduction}
+              {siteConfig.hero.subheadline}
             </motion.p>
           </motion.div>
 
@@ -92,72 +64,81 @@ export default function Home() {
         </div>
       </section>
 
-        {/* Introduction Section */}
-        <section className="py-24 md:py-32 px-6 lg:px-8 bg-background">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <ScrollReveal>
-              <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-light tracking-wide">
-              About My Work
+      {/* Featured Projects Section - Placeholder */}
+      <section className="section-gap-lg border-t border-border">
+        <ScrollReveal>
+          <div className="text-center mb-16 px-6">
+            <h2 className="text-display-md mb-4">
+              Featured Projects
             </h2>
-            <div className="space-y-4 text-lg font-light leading-relaxed text-muted-foreground">
-              <p>
-                {photographerInfo.biography.split('\n\n')[0]}
+            <p className="text-body-lg text-muted-foreground">
+              A selection of what I'm working on
+            </p>
+          </div>
+        </ScrollReveal>
+
+        {/* Empty State */}
+        <ScrollReveal delay={0.2}>
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center py-16">
+              <p className="text-muted-foreground text-body-lg">
+                Sign in to view your vault.
               </p>
             </div>
-                <Link
-                  to="/about"
-                  className="inline-flex items-center gap-2 text-base font-light tracking-wide text-foreground hover:text-muted-foreground transition-colors group"
-                >
-                  <span>Learn More About Me</span>
-                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </div>
-            </ScrollReveal>
           </div>
-        </section>
+        </ScrollReveal>
 
-        {/* Featured Projects Section */}
-        <section className="py-24 md:py-32 border-t border-border">
-          {/* Section Header */}
-          <ScrollReveal>
-            <div className="text-center mb-16 space-y-4 px-6">
-              <h2 className="text-4xl md:text-5xl font-light tracking-wide">
-                Featured Projects
-              </h2>
-              <p className="text-lg text-muted-foreground font-light tracking-wide">
-                A selection of recent work
+        {/* View All Link */}
+        <ScrollReveal delay={0.4}>
+          <div className="flex justify-center mt-12 px-6">
+            <Link
+              to="/projects"
+              className="group inline-flex items-center gap-2 text-body font-light tracking-wide text-muted-foreground hover:text-primary transition-colors"
+            >
+              <span>View All Projects</span>
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* Latest Posts Section - Placeholder */}
+      <section className="section-gap-lg border-t border-border">
+        <ScrollReveal>
+          <div className="text-center mb-16 px-6">
+            <h2 className="text-display-md mb-4">
+              Latest Posts
+            </h2>
+            <p className="text-body-lg text-muted-foreground">
+              Notes and documentation
+            </p>
+          </div>
+        </ScrollReveal>
+
+        {/* Empty State */}
+        <ScrollReveal delay={0.2}>
+          <div className="max-w-3xl mx-auto px-6">
+            <div className="text-center py-16">
+              <p className="text-muted-foreground text-body-lg">
+                Sign in to view your vault.
               </p>
             </div>
-          </ScrollReveal>
-
-          {/* Projects Grid - Edge to edge with minimal gaps */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-            {featuredProjects.map((project, index) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                aspectRatio="landscape"
-                showCategory={true}
-                index={index}
-              />
-            ))}
           </div>
+        </ScrollReveal>
 
-          {/* View All Link */}
-          <ScrollReveal delay={0.4}>
-            <div className="flex justify-center mt-16 px-6">
-              <Link
-                to="/portfolio"
-                className="group inline-flex items-center gap-2 text-lg font-light tracking-wide text-foreground hover:text-muted-foreground transition-colors"
-              >
-                <span>View All Projects</span>
-                <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
-          </ScrollReveal>
-        </section>
-      </div>
-    </>
+        {/* View All Link */}
+        <ScrollReveal delay={0.4}>
+          <div className="flex justify-center mt-12 px-6">
+            <Link
+              to="/blog"
+              className="group inline-flex items-center gap-2 text-body font-light tracking-wide text-muted-foreground hover:text-primary transition-colors"
+            >
+              <span>View All Posts</span>
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </ScrollReveal>
+      </section>
+    </div>
   );
 }
