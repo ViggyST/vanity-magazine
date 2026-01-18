@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
-import { siteConfig } from '@/data/siteConfig';
-import { ScrollIndicator } from '@/components/ui/ScrollIndicator';
-import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { siteConfig } from '@/data/siteConfig';
+import { 
+  getFeaturedProjects, 
+  getProjectsByStatus, 
+  getLatestPosts 
+} from '@/data/seedData';
+import { ProjectCard } from '@/components/projects/ProjectCard';
+import { PostCard } from '@/components/blog/PostCard';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import heroImage from '@/assets/hero-home.jpg';
 
 /**
  * Homepage with immersive hero section
@@ -11,19 +18,25 @@ import { Link } from 'react-router-dom';
  * Fraunces for display headings, Inter for body
  */
 export default function Home() {
+  const featuredProjects = getFeaturedProjects();
+  const wipProjects = getProjectsByStatus('WIP');
+  const latestPosts = getLatestPosts(3);
+
   return (
     <div className="min-h-screen">
-      {/* Hero Section - Full viewport with dark gradient */}
+      {/* Hero Section - Full viewport with cinematic background */}
       <section className="relative h-screen w-full overflow-hidden">
-        {/* Dark gradient background - placeholder for cinematic image */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
-        
-        {/* Subtle texture overlay */}
-        <div className="absolute inset-0 opacity-[0.02]" 
-          style={{ 
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")',
-          }} 
-        />
+        {/* Background image with overlay */}
+        <div className="absolute inset-0">
+          <img
+            src={heroImage}
+            alt=""
+            className="w-full h-full object-cover saturate-[0.7]"
+          />
+          {/* Dark gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
+          <div className="absolute inset-0 bg-background/30" />
+        </div>
 
         {/* Hero Content */}
         <div className="relative h-full flex flex-col items-center justify-center px-6">
@@ -59,38 +72,47 @@ export default function Home() {
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2, duration: 0.8 }}
           >
-            <ScrollIndicator />
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-xs text-muted-foreground tracking-widest uppercase">
+                Scroll
+              </span>
+              <motion.div
+                className="w-px h-8 bg-primary/50"
+                animate={{ scaleY: [1, 0.5, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Featured Projects Section - Placeholder */}
+      {/* Featured Projects Section */}
       <section className="section-gap-lg border-t border-border">
-        <ScrollReveal>
-          <div className="text-center mb-16 px-6">
-            <h2 className="text-display-md mb-4">
-              Featured Projects
-            </h2>
-            <p className="text-body-lg text-muted-foreground">
-              A selection of what I'm working on
-            </p>
-          </div>
-        </ScrollReveal>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <SectionHeader 
+            title="Featured Projects" 
+            subtitle="A selection of what I'm working on"
+          />
 
-        {/* Empty State */}
-        <ScrollReveal delay={0.2}>
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center py-16">
-              <p className="text-muted-foreground text-body-lg">
-                Sign in to view your vault.
-              </p>
-            </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredProjects.map((project, index) => (
+              <ProjectCard 
+                key={project.id} 
+                project={project} 
+                index={index}
+                variant="featured"
+              />
+            ))}
           </div>
-        </ScrollReveal>
 
-        {/* View All Link */}
-        <ScrollReveal delay={0.4}>
-          <div className="flex justify-center mt-12 px-6">
+          {/* View All Link */}
+          <motion.div 
+            className="flex justify-center mt-16"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+          >
             <Link
               to="/projects"
               className="group inline-flex items-center gap-2 text-body font-light tracking-wide text-muted-foreground hover:text-primary transition-colors"
@@ -98,37 +120,59 @@ export default function Home() {
               <span>View All Projects</span>
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </Link>
-          </div>
-        </ScrollReveal>
+          </motion.div>
+        </div>
       </section>
 
-      {/* Latest Posts Section - Placeholder */}
-      <section className="section-gap-lg border-t border-border">
-        <ScrollReveal>
-          <div className="text-center mb-16 px-6">
-            <h2 className="text-display-md mb-4">
-              Latest Posts
-            </h2>
-            <p className="text-body-lg text-muted-foreground">
-              Notes and documentation
-            </p>
-          </div>
-        </ScrollReveal>
+      {/* Building Now Section */}
+      {wipProjects.length > 0 && (
+        <section className="section-gap border-t border-border">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <SectionHeader 
+              title="Building Now" 
+              subtitle="Currently in progress"
+            />
 
-        {/* Empty State */}
-        <ScrollReveal delay={0.2}>
-          <div className="max-w-3xl mx-auto px-6">
-            <div className="text-center py-16">
-              <p className="text-muted-foreground text-body-lg">
-                Sign in to view your vault.
-              </p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {wipProjects.slice(0, 3).map((project, index) => (
+                <ProjectCard 
+                  key={project.id} 
+                  project={project} 
+                  index={index}
+                />
+              ))}
             </div>
           </div>
-        </ScrollReveal>
+        </section>
+      )}
 
-        {/* View All Link */}
-        <ScrollReveal delay={0.4}>
-          <div className="flex justify-center mt-12 px-6">
+      {/* Latest Posts Section */}
+      <section className="section-gap-lg border-t border-border">
+        <div className="max-w-3xl mx-auto px-6 lg:px-8">
+          <SectionHeader 
+            title="Latest Posts" 
+            subtitle="Notes and documentation"
+          />
+
+          <div>
+            {latestPosts.map((post, index) => (
+              <PostCard 
+                key={post.id} 
+                post={post} 
+                index={index}
+                variant="compact"
+              />
+            ))}
+          </div>
+
+          {/* View All Link */}
+          <motion.div 
+            className="flex justify-center mt-12"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+          >
             <Link
               to="/blog"
               className="group inline-flex items-center gap-2 text-body font-light tracking-wide text-muted-foreground hover:text-primary transition-colors"
@@ -136,8 +180,8 @@ export default function Home() {
               <span>View All Posts</span>
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </Link>
-          </div>
-        </ScrollReveal>
+          </motion.div>
+        </div>
       </section>
     </div>
   );
