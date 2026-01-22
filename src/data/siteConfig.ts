@@ -18,8 +18,9 @@ export const siteConfig = {
   
   // Hero content
   hero: {
-    headline: 'Vanity Magazine',
-    subheadline: 'A personal vault for projects and ideas.',
+    label: 'Personal Vault',
+    headline: 'What I build. What I learn. What ships.',
+    subheadline: 'A private archive of projects, ideas, and documentation.',
     introduction: 'Building, exploring, and documenting the journey.',
   },
   

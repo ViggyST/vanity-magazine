@@ -21,12 +21,12 @@ export function PostCard({ post, index = 0, variant = 'default' }: PostCardProps
       >
         <Link
           to={`/blog/${post.slug}`}
-          className="group flex items-baseline justify-between gap-4 py-4 border-b border-border hover:border-primary/30 transition-colors"
+          className="group flex items-baseline justify-between gap-4 py-4 border-b border-border/60 hover:border-primary/30 transition-colors"
         >
-          <h3 className="text-body font-normal text-foreground group-hover:text-primary transition-colors">
+          <h3 className="text-body font-normal text-foreground group-hover:text-primary transition-colors line-clamp-1">
             {post.title}
           </h3>
-          <time className="text-sm text-muted-foreground shrink-0">
+          <time className="text-caption text-muted-foreground shrink-0">
             {formattedDate}
           </time>
         </Link>
@@ -42,7 +42,7 @@ export function PostCard({ post, index = 0, variant = 'default' }: PostCardProps
     >
       <Link
         to={`/blog/${post.slug}`}
-        className="group block py-8 border-b border-border hover:border-primary/30 transition-colors"
+        className="group block py-8 border-b border-border/60 hover:border-primary/30 transition-colors"
       >
         <article className="space-y-3">
           <div className="flex items-center gap-4">
