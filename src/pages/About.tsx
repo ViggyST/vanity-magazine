@@ -1,11 +1,10 @@
 import { motion } from 'framer-motion';
 import { Linkedin } from 'lucide-react';
 import { siteConfig } from '@/data/siteConfig';
-import coverFallback from '@/assets/cover-fallback.jpg';
 
 /**
  * About page - Two-column layout
- * Left: visual (star night image)
+ * Left: visual placeholder (will be image)
  * Right: bio + LinkedIn link
  * Kino-clean aesthetic
  */
@@ -38,14 +37,11 @@ export default function About() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <div className="relative aspect-[4/5] overflow-hidden rounded-lg">
-                <img
-                  src={coverFallback}
-                  alt="Night sky"
-                  className="absolute inset-0 w-full h-full object-cover saturate-[0.85]"
-                />
-                {/* Subtle gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
+              {/* Placeholder for image/visual */}
+              <div className="aspect-[4/5] bg-secondary rounded-lg flex items-center justify-center">
+                <p className="text-muted-foreground text-sm">
+                  Image placeholder
+                </p>
               </div>
             </motion.div>
 

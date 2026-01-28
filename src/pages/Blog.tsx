@@ -1,6 +1,4 @@
 import { motion } from 'framer-motion';
-import { seedPosts } from '@/data/seedData';
-import { PostCard } from '@/components/blog/PostCard';
 
 /**
  * Blog page - List of blog posts (docs)
@@ -28,31 +26,19 @@ export default function Blog() {
         </div>
       </section>
 
-      {/* Posts List */}
+      {/* Empty State */}
       <section className="section-gap px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
-          {seedPosts.length > 0 ? (
-            <div>
-              {seedPosts.map((post, index) => (
-                <PostCard 
-                  key={post.id} 
-                  post={post} 
-                  index={index}
-                />
-              ))}
-            </div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-center py-24"
-            >
-              <p className="text-muted-foreground text-body-lg">
-                No posts yet.
-              </p>
-            </motion.div>
-          )}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-center py-24"
+          >
+            <p className="text-muted-foreground text-body-lg">
+              Sign in to view your vault.
+            </p>
+          </motion.div>
         </div>
       </section>
     </div>
