@@ -1,9 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ExternalLink, Github, BookOpen } from 'lucide-react';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { getProjectBySlug, getCoverForCategory, getPostForProject } from '@/data/seedData';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 
 const statusColors: Record<string, string> = {
   WIP: 'bg-primary/20 text-primary',
@@ -14,7 +13,7 @@ const statusColors: Record<string, string> = {
 
 /**
  * Project detail page
- * Shows project info with cinematic cover image and structured content
+ * Shows project info with cinematic cover image
  */
 export default function ProjectDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -67,6 +66,18 @@ export default function ProjectDetail() {
               transition={{ duration: 0.6 }}
               className="space-y-4"
             >
+              <div className="flex items-center gap-3">
+                <span className={cn(
+                  "px-3 py-1 text-xs font-medium rounded-full",
+                  statusColors[project.status]
+                )}>
+                  {project.status}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {project.category}
+                </span>
+              </div>
+              
               <h1 className="text-display-lg">
                 {project.title}
               </h1>
@@ -82,93 +93,43 @@ export default function ProjectDetail() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-10"
+            className="space-y-8"
           >
-            {/* Overview */}
-            <div className="space-y-4">
-              <h2 className="text-caption text-muted-foreground">Overview</h2>
-              <p className="text-body-lg text-foreground/90">
-                {project.oneLiner}
-              </p>
-            </div>
+            <p className="text-body-lg text-muted-foreground">
+              {project.oneLiner}
+            </p>
 
-            {/* Meta row: Status | Category | Year */}
-            <div className="flex flex-wrap items-center gap-4 py-6 border-y border-border/40">
-              <div className="flex items-center gap-2">
-                <span className="text-caption text-muted-foreground">Status</span>
-                <span className={cn(
-                  "px-3 py-1 text-xs font-medium rounded-full",
-                  statusColors[project.status]
-                )}>
-                  {project.status}
-                </span>
-              </div>
-              <div className="w-px h-4 bg-border/60" />
-              <div className="flex items-center gap-2">
-                <span className="text-caption text-muted-foreground">Type</span>
-                <span className="text-sm text-foreground/80">{project.category}</span>
-              </div>
-            </div>
-
-            {/* Stack chips */}
+            {/* Tags */}
             {project.tags.length > 0 && (
-              <div className="space-y-4">
-                <h2 className="text-caption text-muted-foreground">Stack</h2>
-                <div className="flex flex-wrap gap-2">
-                  {project.tags.map(tag => (
-                    <span 
-                      key={tag}
-                      className="px-3 py-1.5 text-sm text-foreground/80 bg-white/5 border border-border/40 rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+              <div className="flex flex-wrap gap-2">
+                {project.tags.map(tag => (
+                  <span 
+                    key={tag}
+                    className="px-3 py-1 text-sm text-muted-foreground bg-secondary rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
             )}
 
-            {/* Links block */}
-            <div className="space-y-4">
-              <h2 className="text-caption text-muted-foreground">Links</h2>
-              <div className="flex flex-wrap gap-3">
-                {project.primaryLink && (
-                  <Button asChild variant="default" size="sm">
-                    <a
-                      href={project.primaryLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2"
-                    >
-                      <ExternalLink className="size-4" />
-                      Live Site
-                    </a>
-                  </Button>
-                )}
-                <Button asChild variant="outline" size="sm">
-                  <a
-                    href="#"
-                    className="inline-flex items-center gap-2 opacity-50 pointer-events-none"
-                  >
-                    <Github className="size-4" />
-                    GitHub
-                  </a>
-                </Button>
-                <Button asChild variant="outline" size="sm">
-                  <a
-                    href="#"
-                    className="inline-flex items-center gap-2 opacity-50 pointer-events-none"
-                  >
-                    <BookOpen className="size-4" />
-                    Docs
-                  </a>
-                </Button>
-              </div>
-            </div>
+            {/* Primary link */}
+            {project.primaryLink && (
+              <a
+                href={project.primaryLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+              >
+                <span>Visit Project</span>
+                <ExternalLink className="size-4" />
+              </a>
+            )}
 
             {/* Related post */}
             {relatedPost && (
-              <div className="pt-8 border-t border-border/40 space-y-3">
-                <h2 className="text-caption text-muted-foreground">Related Post</h2>
+              <div className="pt-8 border-t border-border">
+                <p className="text-sm text-muted-foreground mb-2">Related Post</p>
                 <Link 
                   to={`/blog/${relatedPost.slug}`}
                   className="text-lg text-foreground hover:text-primary transition-colors"

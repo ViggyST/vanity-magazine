@@ -32,14 +32,14 @@ export function ProjectCard({ project, index = 0, variant = 'default' }: Project
         <article className="space-y-4">
           {/* Cover Image with overlay */}
           <div className={cn(
-            "relative overflow-hidden rounded-2xl border border-border/40",
+            "relative overflow-hidden rounded-lg",
             variant === 'featured' ? 'aspect-[16/10]' : 'aspect-[4/3]'
           )}>
             {/* Image */}
             <img
               src={coverUrl}
               alt={project.title}
-              className="absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.03] saturate-[0.85]"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 saturate-[0.85]"
             />
             
             {/* Dark gradient overlay for readability */}
@@ -57,7 +57,7 @@ export function ProjectCard({ project, index = 0, variant = 'default' }: Project
             
             {/* Title overlay at bottom */}
             <div className="absolute bottom-0 left-0 right-0 p-5">
-              <h3 className="text-xl font-display font-normal text-foreground group-hover:text-primary transition-colors line-clamp-1">
+              <h3 className="text-xl font-display font-normal text-foreground group-hover:text-primary transition-colors">
                 {project.title}
               </h3>
             </div>
@@ -68,7 +68,7 @@ export function ProjectCard({ project, index = 0, variant = 'default' }: Project
             <p className="text-sm text-muted-foreground line-clamp-2">
               {project.oneLiner}
             </p>
-            <p className="text-caption text-muted-foreground/70">
+            <p className="text-xs text-muted-foreground/70">
               {project.category}
             </p>
           </div>
