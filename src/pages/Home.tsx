@@ -10,6 +10,8 @@ import {
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { PostCard } from '@/components/blog/PostCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { HeroSpotlight } from '@/components/home/HeroSpotlight';
+import { Button } from '@/components/ui/button';
 import heroImage from '@/assets/hero-home.jpg';
 
 /**
@@ -21,6 +23,12 @@ export default function Home() {
   const featuredProjects = getFeaturedProjects();
   const wipProjects = getProjectsByStatus('WIP');
   const latestPosts = getLatestPosts(3);
+  
+  // Get first Live project for Spotlight (exclude from featured if same)
+  const liveProjects = getProjectsByStatus('Live');
+  const spotlightProject = liveProjects.find(
+    p => !featuredProjects.slice(0, 3).some(fp => fp.id === p.id)
+  ) || liveProjects[0];
 
   return (
     <div className="min-h-screen">
@@ -41,13 +49,24 @@ export default function Home() {
         {/* Hero Content */}
         <div className="relative h-full flex flex-col items-center justify-center px-6">
           <motion.div
-            className="text-center space-y-8 max-w-4xl"
+            className="text-center space-y-6 max-w-4xl"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
           >
+            {/* Optional small label */}
+            <motion.span
+              className="text-caption text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+            >
+              {siteConfig.hero.label}
+            </motion.span>
+            
             <motion.h1
               className="text-display-xl"
+              style={{ textShadow: '0 4px 30px rgba(0,0,0,0.4)' }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.2 }}
@@ -63,23 +82,48 @@ export default function Home() {
             >
               {siteConfig.hero.subheadline}
             </motion.p>
+
+            {/* CTAs */}
+            <motion.div
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            >
+              <Button asChild size="lg">
+                <Link to="/projects">View Projects</Link>
+              </Button>
+              <Link 
+                to="/blog" 
+                className="text-body text-muted-foreground hover:text-primary transition-colors"
+              >
+                Read Blog
+              </Link>
+            </motion.div>
           </motion.div>
+
+          {/* Spotlight - 1 Live project */}
+          {spotlightProject && (
+            <div className="absolute bottom-24 left-1/2 -translate-x-1/2">
+              <HeroSpotlight project={spotlightProject} />
+            </div>
+          )}
 
           {/* Scroll Indicator */}
           <motion.div
-            className="absolute bottom-12"
+            className="absolute bottom-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2, duration: 0.8 }}
           >
             <div className="flex flex-col items-center gap-2">
-              <span className="text-xs text-muted-foreground tracking-widest uppercase">
+              <span className="text-[10px] text-muted-foreground/60 tracking-widest uppercase">
                 Scroll
               </span>
               <motion.div
-                className="w-px h-8 bg-primary/50"
+                className="w-px h-6 bg-primary/30"
                 animate={{ scaleY: [1, 0.5, 1] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
               />
             </div>
           </motion.div>
@@ -87,7 +131,7 @@ export default function Home() {
       </section>
 
       {/* Featured Projects Section */}
-      <section className="section-gap-lg border-t border-border">
+      <section className="section-gap-lg border-t border-border/40">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <SectionHeader 
             title="Featured Projects" 
@@ -126,7 +170,7 @@ export default function Home() {
 
       {/* Building Now Section */}
       {wipProjects.length > 0 && (
-        <section className="section-gap border-t border-border">
+        <section className="section-gap border-t border-border/40">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <SectionHeader 
               title="Building Now" 
@@ -147,7 +191,7 @@ export default function Home() {
       )}
 
       {/* Latest Posts Section */}
-      <section className="section-gap-lg border-t border-border">
+      <section className="section-gap-lg border-t border-border/40">
         <div className="max-w-3xl mx-auto px-6 lg:px-8">
           <SectionHeader 
             title="Latest Posts" 
