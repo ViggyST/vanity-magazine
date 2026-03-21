@@ -37,7 +37,7 @@ export interface Project {
   title: string;
   slug: string;
   oneLiner: string;
-  status: 'WIP' | 'Dream' | 'Live' | 'Paused';
+  status: 'WIP' | 'Dream' | 'Live' | 'Paused' | 'POC';
   category: string;
   tags: string[];
   featured: boolean;
