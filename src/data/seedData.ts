@@ -160,7 +160,7 @@ export const seedProjects: Project[] = [
     title: 'Campaign Management Platform POC',
     slug: 'campaign-management-platform-poc',
     oneLiner: 'Proof-of-concept campaign management workflow for segmentation, creative generation, approvals, and execution.',
-    status: 'Live',
+    status: 'POC',
     category: 'Office Demo / POC',
     tags: ['campaigns', 'automation', 'segmentation', 'poc', 'agentic'],
     featured: false,
