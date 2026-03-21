@@ -132,7 +132,7 @@ export const seedProjects: Project[] = [
     status: 'Live',
     category: 'Lovable (Major)',
     tags: ['memories', 'journal', 'personal'],
-    featured: false,
+    featured: true,
   },
   {
     id: '8',
