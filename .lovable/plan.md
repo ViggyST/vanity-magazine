@@ -1,38 +1,52 @@
 
 
-# Add 5 New Projects to Seed Data
+# Update Seed Data + Add POC Status
 
-## Summary
-Add 5 new project entries to `src/data/seedData.ts`. No new files, no new images, no structural changes.
+## Files to Change
 
-## What Changes
+### 1. `src/data/seedData.ts`
 
-**File: `src/data/seedData.ts`** — Add 5 objects to the `seedProjects` array (IDs 11-15):
+**Status type** (line 40): Add `'POC'` to the union:
+```typescript
+status: 'WIP' | 'Dream' | 'Live' | 'Paused' | 'POC';
+```
 
-| ID | Title | Status | Category | Slug |
-|----|-------|--------|----------|------|
-| 11 | Campaign Management Platform POC | Live | Office Demo / POC | campaign-management-platform-poc |
-| 12 | RAG Project | WIP | Idea / Research | rag-project |
-| 13 | Paper Trail (Expense Manager) | Live | Lovable (Major) | paper-trail |
-| 14 | MCP Learning Demo | Dream | Idea / Research | mcp-learning-demo |
-| 15 | Clawbot Project | Dream | AI App / Script | clawbot |
+**Remove** projects: ID 9, 14, 15
 
-All use `featured: false` and empty `primaryLink`.
+**Status changes**:
+- ID 3 (Approval Mock MCP): WIP → POC
+- ID 8 (KQL Streaming): Live → POC
+- ID 11 (Campaign Mgmt): Live → POC
+- ID 12 (RAG Project): WIP → Live
 
-## Where They Appear Automatically
+**Featured changes**:
+- ID 1 (Vanity Magazine): true → false
+- ID 2 (Prompt Refiner): true → false
+- ID 7 (Time Capsule): false → true
+- ID 12 (RAG Project): false → true
 
-The existing page logic already handles placement:
+**Add** new project (ID 16): Sambhar Logistic Regression, WIP, `Idea / Research`, oneLiner = "Logistic regression project exploring ML classification fundamentals with scikit-learn."
 
-- **Home / "Building Now"**: RAG Project (WIP) joins existing WIP section
-- **Projects / WIP section**: RAG Project appears
-- **Projects / Dream section**: MCP Learning Demo + Clawbot join existing Dream projects
-- **Projects / Live section**: Campaign Management Platform POC + Paper Trail join existing Live projects
-- **Home / "Featured Projects"**: No change (all new items are `featured: false`)
+### 2. `src/pages/Projects.tsx`
 
-## What Does NOT Change
+Add `const pocProjects = getProjectsByStatus('POC');` and render a "POCs & Demos" section after Live, before Dream. Same grid layout as the other sections.
 
-- No new image assets (category covers already exist for all used categories)
-- No new categories
-- No changes to Home structure, routing, or components
-- No changes to blog posts or site config
+### 3. `src/data/siteConfig.ts`
+
+Add `'POC'` to the statuses array.
+
+### 4. `src/components/projects/ProjectCard.tsx`
+
+Add POC to the `statusColors` map (use a blue-ish or teal pill to distinguish from Live green).
+
+## Result
+
+| Status | Projects | Count |
+|--------|----------|-------|
+| WIP | Vanity Magazine, Prompt Refiner, Sambhar Logistic Regression | 3 |
+| Live | Game Archive, Time Capsule, Temple Landing, Paper Trail, RAG Project | 5 |
+| POC | Approval Mock MCP, KQL Streaming, Campaign Mgmt POC | 3 |
+| Dream | Dream11, Online Board Game | 2 |
+| **Featured** | Game Archive, Time Capsule, RAG Project | 3 |
+| **Total** | | **13** |
 
