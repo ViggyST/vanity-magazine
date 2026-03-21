@@ -13,8 +13,9 @@ import { SectionHeader } from '@/components/ui/SectionHeader';
  */
 export default function Projects() {
   const wipProjects = getProjectsByStatus('WIP');
-  const dreamProjects = getProjectsByStatus('Dream');
   const liveProjects = getProjectsByStatus('Live');
+  const pocProjects = getProjectsByStatus('POC');
+  const dreamProjects = getProjectsByStatus('Dream');
   const pausedProjects = getProjectsByStatus('Paused');
 
   return (
