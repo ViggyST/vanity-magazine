@@ -154,15 +154,6 @@ export const seedProjects: Project[] = [
     tags: ['landing', 'community', 'web'],
     featured: false,
   },
-  {
-    id: '10',
-    title: 'Temple Landing Page',
-    slug: 'temple-landing-page',
-    oneLiner: 'Landing page for a local temple.',
-    status: 'Live',
-    category: 'Lovable (Minor)',
-    tags: ['landing', 'community', 'web'],
-    featured: false,
   },
   {
     id: '11',
