@@ -174,7 +174,7 @@ export const seedProjects: Project[] = [
     status: 'Live',
     category: 'Idea / Research',
     tags: ['rag', 'retrieval', 'embeddings', 'chunking', 'citations'],
-    featured: false,
+    featured: true,
     primaryLink: '',
   },
   {
