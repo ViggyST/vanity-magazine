@@ -146,12 +146,12 @@ export const seedProjects: Project[] = [
   },
   {
     id: '9',
-    title: 'ML Learning Notebook',
-    slug: 'ml-learning-notebook',
-    oneLiner: 'Machine learning concepts via Notebook LLM.',
+    title: 'Temple Landing Page',
+    slug: 'temple-landing-page',
+    oneLiner: 'Landing page for a local temple.',
     status: 'Live',
-    category: 'Idea / Research',
-    tags: ['ml', 'learning', 'notebook'],
+    category: 'Lovable (Minor)',
+    tags: ['landing', 'community', 'web'],
     featured: false,
   },
   {
