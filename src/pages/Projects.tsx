@@ -107,6 +107,29 @@ export default function Projects() {
         </section>
       )}
 
+      {/* POCs & Demos Section */}
+      {pocProjects.length > 0 && (
+        <section className="section-gap px-6 lg:px-8 border-b border-border">
+          <div className="max-w-7xl mx-auto">
+            <SectionHeader 
+              title="POCs & Demos" 
+              subtitle="Proofs of concept and explorations"
+              align="left"
+            />
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {pocProjects.map((project, index) => (
+                <ProjectCard 
+                  key={project.id} 
+                  project={project} 
+                  index={index}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Paused Section */}
       {pausedProjects.length > 0 && (
         <section className="section-gap px-6 lg:px-8">
