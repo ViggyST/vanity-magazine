@@ -78,7 +78,7 @@ export const seedProjects: Project[] = [
     status: 'WIP',
     category: 'Lovable (Minor)',
     tags: ['ai', 'prompts', 'tool'],
-    featured: true,
+    featured: false,
   },
   {
     id: '3',
