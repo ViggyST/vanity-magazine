@@ -14,6 +14,7 @@ const statusColors: Record<string, string> = {
   Dream: 'bg-muted text-muted-foreground',
   Live: 'bg-emerald-500/20 text-emerald-400',
   Paused: 'bg-muted text-muted-foreground',
+  POC: 'bg-sky-500/20 text-sky-400',
 };
 
 export function ProjectCard({ project, index = 0, variant = 'default' }: ProjectCardProps) {

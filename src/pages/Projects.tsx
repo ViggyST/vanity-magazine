@@ -13,8 +13,9 @@ import { SectionHeader } from '@/components/ui/SectionHeader';
  */
 export default function Projects() {
   const wipProjects = getProjectsByStatus('WIP');
-  const dreamProjects = getProjectsByStatus('Dream');
   const liveProjects = getProjectsByStatus('Live');
+  const pocProjects = getProjectsByStatus('POC');
+  const dreamProjects = getProjectsByStatus('Dream');
   const pausedProjects = getProjectsByStatus('Paused');
 
   return (
@@ -95,6 +96,29 @@ export default function Projects() {
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {liveProjects.map((project, index) => (
+                <ProjectCard 
+                  key={project.id} 
+                  project={project} 
+                  index={index}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* POCs & Demos Section */}
+      {pocProjects.length > 0 && (
+        <section className="section-gap px-6 lg:px-8 border-b border-border">
+          <div className="max-w-7xl mx-auto">
+            <SectionHeader 
+              title="POCs & Demos" 
+              subtitle="Proofs of concept and explorations"
+              align="left"
+            />
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {pocProjects.map((project, index) => (
                 <ProjectCard 
                   key={project.id} 
                   project={project} 

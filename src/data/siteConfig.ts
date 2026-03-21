@@ -43,7 +43,7 @@ This site serves as a personal vault — a place to track projects, document lea
   ] as const,
   
   // Project statuses
-  statuses: ['WIP', 'Dream', 'Live', 'Paused'] as const,
+  statuses: ['WIP', 'Dream', 'Live', 'Paused', 'POC'] as const,
 } as const;
 
 export type ProjectCategory = typeof siteConfig.categories[number];
