@@ -85,7 +85,7 @@ export const seedProjects: Project[] = [
     title: 'Approval Mock MCP Server',
     slug: 'approval-mock-mcp',
     oneLiner: 'Custom GPT for simulating approval workflows.',
-    status: 'WIP',
+    status: 'POC',
     category: 'Custom GPT',
     tags: ['gpt', 'workflow', 'automation'],
     featured: false,
