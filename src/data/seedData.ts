@@ -171,7 +171,7 @@ export const seedProjects: Project[] = [
     title: 'RAG Project',
     slug: 'rag-project',
     oneLiner: 'A local-first RAG demo to learn ingestion → embeddings → retrieval → citations end-to-end.',
-    status: 'WIP',
+    status: 'Live',
     category: 'Idea / Research',
     tags: ['rag', 'retrieval', 'embeddings', 'chunking', 'citations'],
     featured: false,
