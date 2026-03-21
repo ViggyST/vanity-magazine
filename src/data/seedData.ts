@@ -154,7 +154,6 @@ export const seedProjects: Project[] = [
     tags: ['landing', 'community', 'web'],
     featured: false,
   },
-  },
   {
     id: '11',
     title: 'Campaign Management Platform POC',
