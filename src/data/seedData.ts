@@ -139,7 +139,7 @@ export const seedProjects: Project[] = [
     title: 'KQL Streaming Demo',
     slug: 'kql-streaming-demo',
     oneLiner: 'Real-time KQL query visualization demo.',
-    status: 'Live',
+    status: 'POC',
     category: 'Office Demo / POC',
     tags: ['kusto', 'streaming', 'demo'],
     featured: false,
