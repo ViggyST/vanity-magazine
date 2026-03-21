@@ -68,7 +68,7 @@ export const seedProjects: Project[] = [
     status: 'WIP',
     category: 'Lovable (Major)',
     tags: ['portfolio', 'vault', 'personal'],
-    featured: true,
+    featured: false,
   },
   {
     id: '2',
