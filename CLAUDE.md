@@ -87,9 +87,12 @@ Code sessions — not tracked here.
 
 ## 7. Current Status
 
-**Last completed: None yet — Session 1 not started.**
-Roster is finalized and confirmed (this file's §6 Session 1). Repo needs to be locally cloned
-before Session 1 can run (see §8) — confirm this is done before starting.
+**Last completed: Session 1 (2026-07-04) — 15-project locked roster is live in `seedData.ts`.**
+`npm run build` = 0 errors; `/projects` and `/` verified in-browser with no console errors, all 15
+projects rendering grouped by status (WIP 1, Dream 1, Live 8, POC 5). Full detail: SESSION_LOG.md.
+Two one-liners are still `[TBD]` (Odyssey, Claude Skills System) — cosmetic, not blocking.
+**Next: Session 2** — connect repo to Vercel, confirm unlisted URL, verify auto-deploy from GitHub
+pushes.
 
 ## 8. Tool Division
 

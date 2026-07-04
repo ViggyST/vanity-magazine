@@ -1,6 +1,14 @@
 /**
- * Seed data for Vanity Magazine MVP
- * Static data until Supabase is connected
+ * Seed data for Vanity Magazine v2
+ * Static data until Supabase is connected (Sprint 3)
+ *
+ * NOTE on category vs typeBucket:
+ * - `category` is kept ONLY for existing projects to preserve their real cover
+ *   images via getCoverForCategory() (old taxonomy: Lovable Major/Minor, etc.)
+ * - `typeBucket` is the NEW taxonomy from the v2 PRD (App / AI-ML / Tool / etc.)
+ * - New projects (ids 17-22) have `category` set to their typeBucket string,
+ *   which intentionally does NOT match categoryCoverMap, so they fall back to
+ *   coverFallback until real/generated thumbnails are added in Sprint 6.
  */
 
 // Import category cover images
@@ -13,7 +21,7 @@ import catBoardGameDesign from '@/assets/cat-board-game-design.jpg';
 import catIdeaResearch from '@/assets/cat-idea-research.jpg';
 import coverFallback from '@/assets/cover-fallback.jpg';
 
-// Category to cover image mapping
+// Category to cover image mapping (legacy, kept for existing projects only)
 export const categoryCoverMap: Record<string, string> = {
   'Lovable (Major)': catLovableMajor,
   'Lovable (Minor)': catLovableMinor,
@@ -31,6 +39,15 @@ export function getCoverForCategory(category: string): string {
   return categoryCoverMap[category] || fallbackCover;
 }
 
+// Type Bucket taxonomy (v2 PRD, section 5)
+export type TypeBucket =
+  | 'App'
+  | 'AI/ML'
+  | 'Tool'
+  | 'Work Demo'
+  | 'Concept'
+  | 'Full-Stack / Custom Build';
+
 // Project type
 export interface Project {
   id: string;
@@ -38,9 +55,11 @@ export interface Project {
   slug: string;
   oneLiner: string;
   status: 'WIP' | 'Dream' | 'Live' | 'Paused' | 'POC';
-  category: string;
+  category: string; // legacy field, drives cover image fallback only
+  typeBucket: TypeBucket; // v2 taxonomy, primary classification going forward
   tags: string[];
   featured: boolean;
+  thumbnail?: string; // NEW in v2 — real screenshot or generated thumbnail URL, filled in Sprint 6
   coverUrl?: string;
   primaryLink?: string;
 }
@@ -57,72 +76,20 @@ export interface Post {
   excerpt: string;
 }
 
-// Seed projects
+// Seed projects — locked roster, confirmed July 2026
 export const seedProjects: Project[] = [
-  // WIP
-  {
-    id: '1',
-    title: 'Vanity Magazine',
-    slug: 'vanity-magazine',
-    oneLiner: 'Personal vault for projects, ideas, and explorations.',
-    status: 'WIP',
-    category: 'Lovable (Major)',
-    tags: ['portfolio', 'vault', 'personal'],
-    featured: false,
-  },
-  {
-    id: '2',
-    title: 'Prompt Refiner',
-    slug: 'prompt-refiner',
-    oneLiner: 'UI/UX tool for iterating on AI prompts.',
-    status: 'WIP',
-    category: 'Lovable (Minor)',
-    tags: ['ai', 'prompts', 'tool'],
-    featured: false,
-  },
-  {
-    id: '3',
-    title: 'Approval Mock MCP Server',
-    slug: 'approval-mock-mcp',
-    oneLiner: 'Custom GPT for simulating approval workflows.',
-    status: 'POC',
-    category: 'Custom GPT',
-    tags: ['gpt', 'workflow', 'automation'],
-    featured: false,
-  },
-
-  // Dream
-  {
-    id: '4',
-    title: 'Dream11 Website Rebuild',
-    slug: 'dream11-rebuild',
-    oneLiner: 'Modern redesign concept for Dream11.',
-    status: 'Dream',
-    category: 'Idea / Research',
-    tags: ['sports', 'fantasy', 'redesign'],
-    featured: false,
-  },
-  {
-    id: '5',
-    title: 'Online Board Game',
-    slug: 'online-board-game',
-    oneLiner: 'Digital version of a custom board game design.',
-    status: 'Dream',
-    category: 'Board Game / Design',
-    tags: ['game', 'multiplayer', 'design'],
-    featured: false,
-  },
-
   // Live
   {
-    id: '6',
-    title: 'Game Archive',
-    slug: 'game-archive',
-    oneLiner: 'Personal archive of games played and reviewed.',
+    id: '17',
+    title: 'EMI Card Fantasy IPL 2026',
+    slug: 'emi-card-fantasy-ipl-2026',
+    oneLiner: 'Custom-built fantasy cricket predictor for IPL 2026, live and used by a real friend group.',
     status: 'Live',
-    category: 'Lovable (Major)',
-    tags: ['games', 'archive', 'collection'],
+    category: 'Full-Stack / Custom Build',
+    typeBucket: 'Full-Stack / Custom Build',
+    tags: ['cricket', 'ipl', 'fintech', 'fantasy'],
     featured: true,
+    primaryLink: '',
   },
   {
     id: '7',
@@ -131,50 +98,9 @@ export const seedProjects: Project[] = [
     oneLiner: 'Digital time capsule for memories and notes.',
     status: 'Live',
     category: 'Lovable (Major)',
+    typeBucket: 'App',
     tags: ['memories', 'journal', 'personal'],
     featured: true,
-  },
-  {
-    id: '8',
-    title: 'KQL Streaming Demo',
-    slug: 'kql-streaming-demo',
-    oneLiner: 'Real-time KQL query visualization demo.',
-    status: 'POC',
-    category: 'Office Demo / POC',
-    tags: ['kusto', 'streaming', 'demo'],
-    featured: false,
-  },
-  {
-    id: '9',
-    title: 'Temple Landing Page',
-    slug: 'temple-landing-page',
-    oneLiner: 'Landing page for a local temple.',
-    status: 'Live',
-    category: 'Lovable (Minor)',
-    tags: ['landing', 'community', 'web'],
-    featured: false,
-  },
-  {
-    id: '11',
-    title: 'Campaign Management Platform POC',
-    slug: 'campaign-management-platform-poc',
-    oneLiner: 'Proof-of-concept campaign management workflow for segmentation, creative generation, approvals, and execution.',
-    status: 'POC',
-    category: 'Office Demo / POC',
-    tags: ['campaigns', 'automation', 'segmentation', 'poc', 'agentic'],
-    featured: false,
-    primaryLink: '',
-  },
-  {
-    id: '12',
-    title: 'RAG Project',
-    slug: 'rag-project',
-    oneLiner: 'A local-first RAG demo to learn ingestion → embeddings → retrieval → citations end-to-end.',
-    status: 'Live',
-    category: 'Idea / Research',
-    tags: ['rag', 'retrieval', 'embeddings', 'chunking', 'citations'],
-    featured: true,
-    primaryLink: '',
   },
   {
     id: '13',
@@ -183,20 +109,155 @@ export const seedProjects: Project[] = [
     oneLiner: 'Expense manager app for fast logging, clean analytics, and habit-friendly tracking.',
     status: 'Live',
     category: 'Lovable (Major)',
+    typeBucket: 'App',
     tags: ['expenses', 'finance', 'pwa', 'analytics', 'tracking'],
-    featured: false,
+    featured: true,
     primaryLink: '',
+  },
+  {
+    id: '6',
+    title: 'Game Archive',
+    slug: 'game-archive',
+    oneLiner: 'Personal archive of games played and reviewed.',
+    status: 'Live',
+    category: 'Lovable (Major)',
+    typeBucket: 'App',
+    tags: ['games', 'archive', 'collection'],
+    featured: false,
   },
   {
     id: '16',
     title: 'Sambhar Logistic Regression',
     slug: 'sambhar-logistic-regression',
-    oneLiner: 'Logistic regression project exploring ML classification fundamentals with scikit-learn.',
-    status: 'WIP',
+    oneLiner: 'Logistic regression classifier project — functionally complete and self-hosted locally, not yet deployed to Vercel.',
+    status: 'Live',
     category: 'Idea / Research',
-    tags: ['ml', 'logistic-regression', 'python', 'scikit-learn'],
+    typeBucket: 'AI/ML',
+    tags: ['ml', 'logistic-regression', 'python', 'scikit-learn', 'self-hosted'],
     featured: false,
     primaryLink: '',
+  },
+  {
+    id: '12',
+    title: 'RAG Project',
+    slug: 'rag-project',
+    oneLiner: 'A local-first RAG demo to learn ingestion → embeddings → retrieval → citations end-to-end. Functionally done, hosting TBD.',
+    status: 'Live',
+    category: 'Idea / Research',
+    typeBucket: 'AI/ML',
+    tags: ['rag', 'retrieval', 'embeddings', 'chunking', 'citations', 'self-hosted'],
+    featured: false,
+    primaryLink: '',
+  },
+  {
+    id: '20',
+    title: 'Kickoff 26',
+    slug: 'kickoff-26',
+    oneLiner: 'FIFA World Cup 2026 prediction site for a ~20-person friend group, with shareable prediction cards.',
+    status: 'Live',
+    category: 'Full-Stack / Custom Build',
+    typeBucket: 'Full-Stack / Custom Build',
+    tags: ['nextjs', 'supabase', 'sports', 'worldcup'],
+    featured: false,
+    primaryLink: '',
+  },
+  {
+    id: '21',
+    title: 'Odyssey',
+    slug: 'odyssey',
+    oneLiner: '[TBD — confirm stack/details] PWA gym workout tracker and guide.',
+    status: 'Live',
+    category: 'App',
+    typeBucket: 'App',
+    tags: ['fitness', 'pwa', 'tools'],
+    featured: false,
+    primaryLink: '',
+  },
+
+  // WIP
+  {
+    id: '1',
+    title: 'Vanity Magazine',
+    slug: 'vanity-magazine',
+    oneLiner: 'Personal AI/build diary — projects, blog, learning roadmap, and current focus.',
+    status: 'WIP',
+    category: 'Lovable (Major)',
+    typeBucket: 'App',
+    tags: ['portfolio', 'vault', 'personal'],
+    featured: false,
+  },
+
+  // POC
+  {
+    id: '11',
+    title: 'Campaign Management Platform POC',
+    slug: 'campaign-management-platform-poc',
+    oneLiner: 'Proof-of-concept campaign management workflow for segmentation, creative generation, approvals, and execution.',
+    status: 'POC',
+    category: 'Office Demo / POC',
+    typeBucket: 'Work Demo',
+    tags: ['campaigns', 'automation', 'segmentation', 'poc', 'agentic'],
+    featured: false,
+    primaryLink: '',
+  },
+  {
+    id: '8',
+    title: 'KQL Streaming Demo',
+    slug: 'kql-streaming-demo',
+    oneLiner: 'Real-time KQL query visualization demo.',
+    status: 'POC',
+    category: 'Office Demo / POC',
+    typeBucket: 'Work Demo',
+    tags: ['kusto', 'streaming', 'demo'],
+    featured: false,
+  },
+  {
+    id: '18',
+    title: 'GitHub MCP Server',
+    slug: 'github-mcp-server',
+    oneLiner: 'MCP server connecting Claude to GitHub — list repos, browse files, read file contents, and search code directly from chat, no manual copy-paste.',
+    status: 'POC',
+    category: 'Tool',
+    typeBucket: 'Tool',
+    tags: ['mcp', 'tools', 'github', 'automation'],
+    featured: false,
+    primaryLink: '',
+  },
+  {
+    id: '19',
+    title: 'Claude Skills System',
+    slug: 'claude-skills-system',
+    oneLiner: '[Confirm/edit] A library of custom Claude skills (BLUEPRINT, CRAFT, FOE+, MBB, PHD, SHIP, etc.) for structured product and dev workflows.',
+    status: 'POC',
+    category: 'Tool',
+    typeBucket: 'Tool',
+    tags: ['mcp', 'tools', 'learning'],
+    featured: false,
+    primaryLink: '',
+  },
+  {
+    id: '3',
+    title: 'Approval Mock MCP Server',
+    slug: 'approval-mock-mcp',
+    oneLiner: 'Custom GPT for simulating approval workflows.',
+    status: 'POC',
+    category: 'Custom GPT',
+    typeBucket: 'Work Demo',
+    tags: ['gpt', 'workflow', 'automation'],
+    featured: false,
+  },
+
+  // Dream
+  {
+    id: '22',
+    title: 'Game Project',
+    slug: 'game-project',
+    oneLiner: 'Concept-stage board/artifact game — not yet built.',
+    status: 'Dream',
+    category: 'Concept',
+    typeBucket: 'Concept',
+    tags: ['game', 'design', 'concept'],
+    featured: false,
   },
 ];
 
