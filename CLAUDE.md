@@ -87,12 +87,15 @@ Code sessions — not tracked here.
 
 ## 7. Current Status
 
-**Last completed: Session 1 (2026-07-04) — 15-project locked roster is live in `seedData.ts`.**
-`npm run build` = 0 errors; `/projects` and `/` verified in-browser with no console errors, all 15
-projects rendering grouped by status (WIP 1, Dream 1, Live 8, POC 5). Full detail: SESSION_LOG.md.
-Two one-liners are still `[TBD]` (Odyssey, Claude Skills System) — cosmetic, not blocking.
-**Next: Session 2** — connect repo to Vercel, confirm unlisted URL, verify auto-deploy from GitHub
-pushes.
+**Last completed: Session 2 (2026-07-04) — live Vercel deployment verified and corrected.**
+Live URL: **https://vanity-magazine.vercel.app/**. Found and fixed two gaps: the live site was
+stale (pending local commits had never been pushed to `origin/main`) and had no SPA rewrite (any
+route but `/` 404'd on direct load). Pushed all pending commits + added `vercel.json`; redeploy
+confirmed via bundle-hash match and direct chunk inspection — live site now has the exact
+Session 1 roster (15 projects, `typeBucket` × 15) and all routes (`/`, `/projects`, `/blog`,
+`/learning`, `/now`, `/admin`) return 200. Full detail: SESSION_LOG.md. Two one-liners are still
+`[TBD]` (Odyssey, Claude Skills System) — cosmetic, not blocking.
+**Next: Session 3** — add Supabase: create `blog`, `learning_roadmap`, `now` tables + client setup.
 
 ## 8. Tool Division
 
