@@ -1,17 +1,44 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, FolderKanban, FileText, Plus } from 'lucide-react';
+import { ArrowLeft, FileText, ListChecks, Sparkles, LogOut } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/data/siteConfig';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabaseClient';
+import { LoadingFallback } from '@/components/ui/LoadingFallback';
+import { BlogPostForm } from '@/components/admin/BlogPostForm';
+import { LearningRoadmapForm } from '@/components/admin/LearningRoadmapForm';
+import { NowForm } from '@/components/admin/NowForm';
 
 /**
- * Admin console page
- * All dense UI lives here only
- * Tabs: Projects / Posts / Quick Add
- * Protected route (requires auth)
+ * Admin console page — protected route, requires an authenticated session.
+ * Tabs: Blog Post / Learning Roadmap / Now
+ *
+ * Redirects use a hard `window.location.href` rather than react-router's `navigate()` --
+ * a client-side navigate() between two lazy-loaded routes here gets stuck indefinitely on
+ * the Suspense fallback (AnimatePresence's mode="wait" + a single shared Suspense boundary
+ * around all lazy routes in App.tsx interact badly when the incoming route is also lazy).
+ * A hard redirect sidesteps it entirely and is arguably more correct for an auth boundary.
  */
 export default function Admin() {
-  // TODO: Add auth check and redirect to /login if not authenticated
+  const { session, loading, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      window.location.href = '/login';
+    }
+  }, [loading, isAuthenticated]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/login';
+  };
+
+  if (loading || !session) {
+    return <LoadingFallback />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -20,14 +47,18 @@ export default function Admin() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ArrowLeft className="size-5" />
               </Link>
               <h1 className="font-display text-xl">{siteConfig.name} Admin</h1>
             </div>
+            <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-2">
+              <LogOut className="size-4" />
+              Sign out
+            </Button>
           </div>
         </div>
       </header>
@@ -39,47 +70,32 @@ export default function Admin() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Tabs defaultValue="projects" className="space-y-6">
+          <Tabs defaultValue="blog" className="space-y-6">
             <TabsList>
-              <TabsTrigger value="projects" className="gap-2">
-                <FolderKanban className="size-4" />
-                Projects
-              </TabsTrigger>
-              <TabsTrigger value="posts" className="gap-2">
+              <TabsTrigger value="blog" className="gap-2">
                 <FileText className="size-4" />
-                Posts
+                Blog Post
               </TabsTrigger>
-              <TabsTrigger value="quick-add" className="gap-2">
-                <Plus className="size-4" />
-                Quick Add
+              <TabsTrigger value="learning" className="gap-2">
+                <ListChecks className="size-4" />
+                Learning Roadmap
+              </TabsTrigger>
+              <TabsTrigger value="now" className="gap-2">
+                <Sparkles className="size-4" />
+                Now
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="projects" className="space-y-6">
-              <div className="text-center py-24 border border-dashed border-border rounded-lg">
-                <p className="text-muted-foreground">
-                  Projects management coming soon.<br />
-                  Enable Lovable Cloud to get started.
-                </p>
-              </div>
+            <TabsContent value="blog" className="max-w-2xl">
+              <BlogPostForm />
             </TabsContent>
 
-            <TabsContent value="posts" className="space-y-6">
-              <div className="text-center py-24 border border-dashed border-border rounded-lg">
-                <p className="text-muted-foreground">
-                  Posts management coming soon.<br />
-                  Enable Lovable Cloud to get started.
-                </p>
-              </div>
+            <TabsContent value="learning" className="max-w-2xl">
+              <LearningRoadmapForm />
             </TabsContent>
 
-            <TabsContent value="quick-add" className="space-y-6">
-              <div className="text-center py-24 border border-dashed border-border rounded-lg">
-                <p className="text-muted-foreground">
-                  Quick add coming soon.<br />
-                  Enable Lovable Cloud to get started.
-                </p>
-              </div>
+            <TabsContent value="now" className="max-w-2xl">
+              <NowForm />
             </TabsContent>
           </Tabs>
         </motion.div>

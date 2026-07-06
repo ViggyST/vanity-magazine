@@ -104,23 +104,35 @@ migration: `supabase/migrations/20260706070134_create_vanitymagazine_schema.sql`
 Sessions 7–9 (habit usage, design pass, portfolio curation) are manual/later phases, not Claude
 Code sessions — not tracked here.
 
+**Amendment (Session 4, 2026-07-06):** auth was added to Session 4's scope after the PRD locked —
+confirmed directly with the user, not something §1's original MVP scope anticipated. Reason: §1
+says "no auth/password gate" for the *site*, but that was always about the unlisted-URL public
+pages, not the admin write path. Session 3 originally gave `anon`/`authenticated` identical full
+CRUD grants (a formality, per §5's original note) — once real write forms existed (this session),
+that meant anyone with the unlisted URL and the public anon key (visible in any browser's network
+tab) could write to the database directly via the REST API, with no login at all. Session 4 closed
+that gap: RLS + grants now restrict INSERT/UPDATE/DELETE to `authenticated`, and a real login page
+gates `/admin`. Public read access (`/blog`, `/learning`, `/now` pages) is unaffected — those stay
+open per the original "no auth to browse" intent.
+
 ## 7. Current Status
 
-**Last completed: Session 3 (2026-07-06) — Supabase connected, `vanitymagazine` schema live.**
-`@supabase/supabase-js` installed; schema-scoped client at `src/lib/supabaseClient.ts`; migration
-`supabase/migrations/20260706070134_create_vanitymagazine_schema.sql` created `blog`,
-`learning_roadmap`, `now` tables (RLS + permissive policy + explicit anon/authenticated grants —
-see §5). Round-trip test (insert → select → delete on `now`) passed against the live project after
-resolving two real gaps: (1) `.env`'s `VITE_SUPABASE_URL` was a Dashboard link, not the API
-endpoint — fixed; (2) the `vanitymagazine` schema needed both a Dashboard exposure change (done
-manually by user) *and* a PostgREST schema-cache reload (`NOTIFY pgrst, 'reload schema'`) before
-tables were queryable — the exposure change alone wasn't sufficient. Confirmed `ipl2026` still
-works (HTTP 200) after the exposure change; `kickoff26` returns a permission error but it's
-pre-existing and unrelated — `anon`/`authenticated` never had schema-level `USAGE` on `kickoff26`
-to begin with. `.env` added to `.gitignore` (was previously untracked but not ignored). Full
-detail: SESSION_LOG.md.
-**Next: Session 4** — build `/admin` entry form (add Blog post, edit Learning items, edit Now
-widget) using react-hook-form + zod against Supabase.
+**Last completed: Session 4 (2026-07-06) — auth added, RLS tightened, admin forms working.**
+RLS on all 3 `vanitymagazine` tables now: `SELECT` open to `anon`/`authenticated` (public browsing
+unaffected), `INSERT`/`UPDATE`/`DELETE` restricted to `authenticated` only (migration
+`supabase/migrations/20260706080510_tighten_vanitymagazine_write_rls.sql`) — see §6 amendment for
+why. Real login page (`supabase.auth.signInWithPassword()`, single existing user, no signup/reset
+UI) gates `/admin`; 3 working forms (Blog Post, Learning Roadmap, Now) write to Supabase with
+toast feedback. Found and fixed a real bug along the way: client-side `navigate()` between two
+lazy-loaded routes got stuck indefinitely on the shared Suspense fallback (an
+`AnimatePresence`/`Suspense` interaction issue in `App.tsx`'s routing, likely pre-existing, not
+refactored — out of scope) — worked around by using a hard `window.location.href` redirect for
+both the login and logout transitions. Verified: anon writes now `401`, anon reads still `200`;
+RLS policies confirmed via `pg_policies`; `npm run build` and `tsc --noEmit` both 0 errors. Could
+not test a full successful login end-to-end (would require the real password). Full detail:
+SESSION_LOG.md.
+**Next: Session 5** — build `/blog` (mixed feed), `/learning` (Kanban board), `/now` page + Home
+widget, reading live from Supabase.
 
 ## 8. Tool Division
 

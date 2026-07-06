@@ -155,3 +155,81 @@ API → Exposed Schemas) instead, done manually by the user.
 
 **Next:** Session 4 — build `/admin` entry form (add Blog post, edit Learning items, edit Now
 widget) using react-hook-form + zod against Supabase.
+
+---
+
+## Session 4 — 2026-07-06
+
+**Scope:** Extends CLAUDE.md §6 — auth requirement confirmed directly with the user after the PRD
+locked, not originally in scope (see CLAUDE.md §6 note). Tighten RLS to authenticated-only writes,
+add a real login page, protect `/admin`, and build 3 working forms (Blog Post, Learning Roadmap,
+Now) against the `vanitymagazine` schema.
+
+**What changed:**
+- Migration `supabase/migrations/20260706080510_tighten_vanitymagazine_write_rls.sql`: dropped the
+  Session 3 permissive "allow all" policy on all 3 tables; replaced with `"public read"` (SELECT,
+  `to public`/anon+authenticated) plus separate `authenticated`-only INSERT/UPDATE/DELETE
+  policies. Revoked `INSERT, UPDATE, DELETE` from `anon` at the grant level too (not just RLS) —
+  belt and suspenders, since a grant revocation blocks the query before RLS is even evaluated.
+  `ALTER DEFAULT PRIVILEGES` updated so future tables in this schema inherit the same anon
+  read-only default.
+- `src/hooks/useAuth.ts` — session hook wrapping `supabase.auth.getSession()` +
+  `onAuthStateChange()`.
+- `src/pages/Login.tsx` — wired the existing scaffold's password-only UI to a real
+  `supabase.auth.signInWithPassword()` call. Email is fixed to `siteConfig.owner.email` (not a
+  second input field) — this matches the pre-existing scaffold's design intent (Login.tsx's own
+  comments and `siteConfig.owner.email`'s "Hardcoded for auth" note already assumed this), and
+  still satisfies "single email/password" since both are passed to the API call, just one isn't
+  user-typed. Flagging as a judgment call in case a two-field form was actually wanted.
+- `src/pages/Admin.tsx` — session check on mount, redirects to `/login` if unauthenticated; replaced
+  the old "Projects / Posts / Quick Add" placeholder tabs (which assumed DB-backed project CRUD,
+  out of scope per CLAUDE.md §1) with the actual 3 tabs: Blog Post, Learning Roadmap, Now. Added a
+  sign-out button (not explicitly requested, but a login flow with no way to log out is
+  incomplete).
+- `src/components/admin/BlogPostForm.tsx`, `LearningRoadmapForm.tsx`, `NowForm.tsx` — react-hook-form
+  + zod, matching the existing `ContactForm.tsx` convention. `LearningRoadmapForm` fetches existing
+  blog posts via `@tanstack/react-query` (first real use of the query client, installed since
+  Session 1) for the `linked_blog_post` dropdown. `NowForm` fetches the existing singleton row (may
+  be none — table starts empty per Session 3) to prefill, then always `upsert`s on `id = 1`.
+- All 3 forms show a toast (`useToast`) on success or failure.
+
+**Real bug found and fixed (not in the original plan):** a client-side `navigate()` from `/admin`
+to `/login` (react-router) got stuck indefinitely on the app's global Suspense fallback —
+confirmed via network inspection that the `Login.tsx` chunk was never even fetched after the
+redirect fired, even though the URL did change. Root cause: `AnimatePresence mode="wait"` in
+`App.tsx` wraps ALL routes under one shared `Suspense` boundary; when navigating between two
+lazy-loaded routes, the incoming route suspending can interrupt the outgoing route's exit
+animation in a way that leaves `AnimatePresence` waiting on an exit-complete callback that never
+fires. This looks like a pre-existing architectural issue in the scaffold's routing (not something
+this session's code caused), but fixing it properly would mean restructuring `App.tsx`'s shared
+Suspense/AnimatePresence setup — out of scope for this session. Fix applied: both the
+unauthenticated-redirect (`Admin.tsx`) and the post-login redirect (`Login.tsx`) now use a hard
+`window.location.href` instead of `navigate()`, sidestepping the issue entirely. This is also a
+reasonable pattern on its own merits for an auth boundary (forces a clean state re-check rather
+than trusting client-side transition state).
+
+**Verification:**
+- `npm run build` — 0 errors. `npx tsc --noEmit` — 0 errors (Vite's build alone doesn't fully
+  type-check; ran this separately to be sure).
+- Confirmed an existing Supabase Auth user already exists for the owner's email (confirmed,
+  previously signed in) — did not create one myself (creating accounts/setting passwords isn't
+  something to do without the user). This auth account is shared across the whole Supabase
+  instance (not scoped to `vanitymagazine`), same as the other apps on this shared project —
+  expected for a single owner, not a bug.
+- RLS policy definitions checked directly via `pg_policies`: all 3 tables show `SELECT` scoped to
+  `public`, `INSERT`/`UPDATE`/`DELETE` scoped to `authenticated` only.
+- Logged-out write attempt tested directly against the live Data API (`curl`, anon key): INSERT on
+  `now` returns `401 permission denied for table now`. Logged-out reads on `now` and `blog` both
+  return `200` with the (currently empty) table contents — public browsing unaffected.
+- Browser-verified (dev server): fresh load of `/admin` while logged out redirects to `/login`
+  with no console errors; login page renders correctly; submitting a deliberately wrong password
+  shows "Invalid login credentials" inline, stays on `/login`, no console errors. Did not test a
+  successful login end-to-end — doing so would require the real password, which wasn't shared and
+  shouldn't be.
+- Security advisor re-run post-migration: no new findings beyond the expected
+  `rls_policy_always_true` on the new `authenticated`-scoped write policies (intentional, same as
+  Session 3's blanket policy, just now correctly narrowed to `authenticated` instead of everyone).
+  Everything else pre-existing, unrelated (kickoff26/st_health/ipl2026/public-Odyssey).
+
+**Next:** Session 5 — build `/blog` (mixed feed), `/learning` (Kanban board), `/now` page + Home
+widget, reading live from Supabase.

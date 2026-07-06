@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { siteConfig } from '@/data/siteConfig';
+import { supabase } from '@/lib/supabaseClient';
 
 /**
- * Login page - Password-only UI
- * Email is hardcoded internally (vigneswaran235@gmail.com)
- * Clean, Kino-style minimal form
+ * Login page - password-only UI, email is fixed to the site owner (single-user app).
+ * No signup flow, no password reset UI (reset via Supabase dashboard if ever needed).
  */
 export default function Login() {
   const [password, setPassword] = useState('');
@@ -22,14 +22,20 @@ export default function Login() {
     setIsLoading(true);
     setError(null);
 
-    // TODO: Implement Supabase auth
-    // signInWithPassword({ email: siteConfig.owner.email, password })
-    
-    // Placeholder for now
-    setTimeout(() => {
-      setIsLoading(false);
-      setError('Authentication not yet configured. Enable Lovable Cloud to continue.');
-    }, 1000);
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: siteConfig.owner.email,
+      password,
+    });
+
+    setIsLoading(false);
+
+    if (signInError) {
+      setError(signInError.message);
+      return;
+    }
+
+    // Hard redirect, not react-router's navigate() -- see Admin.tsx for why.
+    window.location.href = '/admin';
   };
 
   return (
