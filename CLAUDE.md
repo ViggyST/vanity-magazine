@@ -30,7 +30,7 @@ public sharing/SEO.
 | Routing | React Router DOM | v6 |
 | Data fetching | @tanstack/react-query | installed, unused until Supabase lands |
 | Forms | react-hook-form + zod | installed, unused until admin form (Session 4) |
-| Backend/DB | Supabase | not yet connected — Session 3 |
+| Backend/DB | Supabase | connected Session 3 — `vanitymagazine` schema, shared project |
 | Hosting | Vercel | not yet connected — Session 2 |
 
 ## 3. Conventions
@@ -65,11 +65,30 @@ src/
 category (legacy), typeBucket (App|AI/ML|Tool|Work Demo|Concept|Full-Stack/Custom Build), tags[],
 featured, thumbnail?, coverUrl?, primaryLink?`
 
-**Supabase tables** (Session 3, TBD exact columns — define then):
-- `blog`: id, title, slug, date, tags[], postType (thought|learning-note|paper-review|
-  product-find|essay), excerpt, content (markdown), linkedProject?
-- `learning_roadmap`: id, topic, status (Learned|Learning|Planned), notes?, linkedBlogPost?
-- `now`: single record — currentlyBuilding[], currentlyLearning[], recentlyShipped[], lastUpdated
+**Supabase tables** (finalized Session 3, schema `vanitymagazine`, columns snake_case;
+migration: `supabase/migrations/20260706070134_create_vanitymagazine_schema.sql`):
+- `blog`: `id uuid pk default gen_random_uuid()`, `title text not null`, `slug text not null unique`,
+  `date date not null`, `tags text[] not null default '{}'`, `post_type text not null check in
+  ('thought','learning-note','paper-review','product-find','essay')`, `excerpt text not null`,
+  `content text not null` (markdown), `linked_project text` (references seedData.ts Project.id —
+  static roster, no real FK), `created_at timestamptz not null default now()`.
+- `learning_roadmap`: `id uuid pk default gen_random_uuid()`, `topic text not null`,
+  `status text not null check in ('Learned','Learning','Planned')`, `notes text`,
+  `linked_blog_post uuid references vanitymagazine.blog(id) on delete set null` (real FK, both
+  tables live in DB), `created_at timestamptz not null default now()`.
+- `now`: singleton — `id integer pk default 1 check (id = 1)`, `currently_building text[] not null
+  default '{}'`, `currently_learning text[] not null default '{}'`, `recently_shipped text[] not
+  null default '{}'`, `last_updated timestamptz not null default now()`. **Not pre-seeded** —
+  table starts empty; Session 4's admin form must `upsert` on `id = 1`, not assume a row exists.
+- All 3 tables: RLS enabled, single permissive `"allow all"` policy (`USING (true) WITH CHECK
+  (true)`) — formality only, real boundary is the unlisted URL. `anon`/`authenticated` granted
+  `SELECT, INSERT, UPDATE, DELETE` explicitly (schema-level `GRANT USAGE` + table-level grants +
+  `ALTER DEFAULT PRIVILEGES` for future tables in this schema).
+- TS types hand-written in `src/types/supabase.ts` (mirrors the migration) — Supabase MCP's
+  `generate_typescript_types` only covers the `public` schema on this shared project, not custom
+  schemas, so this isn't auto-generated. Keep in sync manually if the schema changes.
+- Client: `src/lib/supabaseClient.ts`, schema-scoped via `db: { schema: 'vanitymagazine' }` —
+  no need to repeat `.schema('vanitymagazine')` per query.
 
 ## 6. Build Session Plan
 
@@ -87,15 +106,21 @@ Code sessions — not tracked here.
 
 ## 7. Current Status
 
-**Last completed: Session 2 (2026-07-04) — live Vercel deployment verified and corrected.**
-Live URL: **https://vanity-magazine.vercel.app/**. Found and fixed two gaps: the live site was
-stale (pending local commits had never been pushed to `origin/main`) and had no SPA rewrite (any
-route but `/` 404'd on direct load). Pushed all pending commits + added `vercel.json`; redeploy
-confirmed via bundle-hash match and direct chunk inspection — live site now has the exact
-Session 1 roster (15 projects, `typeBucket` × 15) and all routes (`/`, `/projects`, `/blog`,
-`/learning`, `/now`, `/admin`) return 200. Full detail: SESSION_LOG.md. Two one-liners are still
-`[TBD]` (Odyssey, Claude Skills System) — cosmetic, not blocking.
-**Next: Session 3** — add Supabase: create `blog`, `learning_roadmap`, `now` tables + client setup.
+**Last completed: Session 3 (2026-07-06) — Supabase connected, `vanitymagazine` schema live.**
+`@supabase/supabase-js` installed; schema-scoped client at `src/lib/supabaseClient.ts`; migration
+`supabase/migrations/20260706070134_create_vanitymagazine_schema.sql` created `blog`,
+`learning_roadmap`, `now` tables (RLS + permissive policy + explicit anon/authenticated grants —
+see §5). Round-trip test (insert → select → delete on `now`) passed against the live project after
+resolving two real gaps: (1) `.env`'s `VITE_SUPABASE_URL` was a Dashboard link, not the API
+endpoint — fixed; (2) the `vanitymagazine` schema needed both a Dashboard exposure change (done
+manually by user) *and* a PostgREST schema-cache reload (`NOTIFY pgrst, 'reload schema'`) before
+tables were queryable — the exposure change alone wasn't sufficient. Confirmed `ipl2026` still
+works (HTTP 200) after the exposure change; `kickoff26` returns a permission error but it's
+pre-existing and unrelated — `anon`/`authenticated` never had schema-level `USAGE` on `kickoff26`
+to begin with. `.env` added to `.gitignore` (was previously untracked but not ignored). Full
+detail: SESSION_LOG.md.
+**Next: Session 4** — build `/admin` entry form (add Blog post, edit Learning items, edit Now
+widget) using react-hook-form + zod against Supabase.
 
 ## 8. Tool Division
 
@@ -112,9 +137,14 @@ Session 1 roster (15 projects, `typeBucket` × 15) and all routes (`/`, `/projec
 
 ## 9. Env Vars & Risks
 
-**Env vars** (names only — needed from Session 3 onward):
-- `VITE_SUPABASE_URL` — Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` — Supabase anon/public key
+**Env vars** (confirmed Session 3 — names match exactly what `src/lib/supabaseClient.ts` reads
+via `import.meta.env`):
+- `VITE_SUPABASE_URL` — must be the API endpoint `https://<ref>.supabase.co`, NOT the Dashboard
+  URL (`https://supabase.com/dashboard/project/<ref>`) — this was wrong in `.env` until Session 3
+  fixed it; the client fails silently/confusingly if it's a Dashboard link.
+- `VITE_SUPABASE_ANON_KEY` — modern `sb_publishable_...` format (not a legacy JWT anon key),
+  confirmed active via `get_publishable_keys`.
+- `.env` is now in `.gitignore` (Session 3) — was previously untracked but unprotected.
 
 **Open risks / questions:**
 - Sambhar Logistic Regression & RAG Project are marked `Live` but are self-hosted/local only, not
@@ -124,3 +154,20 @@ Session 1 roster (15 projects, `typeBucket` × 15) and all routes (`/`, `/projec
   without checking every existing project's `category` value still resolves correctly.
 - GitHub MCP (read-only) was mistakenly assumed sufficient for Claude Code in earlier planning —
   corrected; local clone is mandatory, see §8.
+- **This Supabase project is shared infrastructure** — `public` schema hosts Odyssey's tables
+  (`exercises`, `workout_sessions`, `session_sets`), and `ipl2026`/`kickoff26`/`odyssey`/
+  `st_health` are other apps' schemas on the same instance. Never assume `vanitymagazine` is the
+  only schema when reasoning about grants/exposure — always scope changes to `vanitymagazine`
+  explicitly.
+- Exposing a new schema to PostgREST needs **two** steps, not one: the Dashboard's Exposed
+  Schemas list (or the `ALTER ROLE authenticator SET pgrst.db_schemas` override — do NOT use this
+  on this project, it replaces the entire list and would break `kickoff26`/`odyssey`/`st_health`
+  which aren't in Supabase's own default set) *and* `NOTIFY pgrst, 'reload schema'` to refresh
+  PostgREST's cache of the new schema's tables. The Dashboard change alone left tables
+  unqueryable (`PGRST205`) until the reload was run.
+- `kickoff26`'s Data API access is broken independent of anything in this project — `anon`/
+  `authenticated` have no `USAGE` grant on the `kickoff26` schema at all (confirmed via direct SQL
+  and a live 401). Pre-existing, unrelated to Vanity Magazine, not fixed here.
+- Odyssey's `public` schema tables (`exercises`, `workout_sessions`, `session_sets`) have RLS
+  fully disabled — exposed to the anon key. Flagged per Supabase's own security advisor, out of
+  scope for this repo, not remediated here.

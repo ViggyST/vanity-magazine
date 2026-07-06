@@ -81,3 +81,77 @@ before this session started. Live URL: https://vanity-magazine.vercel.app/
 
 **Next:** Session 3 — add Supabase: create `blog`, `learning_roadmap`, `now` tables + client
 setup.
+
+---
+
+## Session 3 — 2026-07-06
+
+**Scope:** Connect Supabase. Install `@supabase/supabase-js`, create a `vanitymagazine`-scoped
+client, create `blog`/`learning_roadmap`/`now` tables in a dedicated `vanitymagazine` schema (not
+`public`), enable RLS with a permissive policy, add explicit grants, write the migration as a
+`.sql` file, and prove it all works with a round-trip test.
+
+**Plan approved with one change:** originally proposed handling PostgREST schema exposure via
+`ALTER ROLE authenticator SET pgrst.db_schemas = 'public, vanitymagazine'` inside the migration for
+full automation. Rejected — that command *replaces* the entire exposed-schema list rather than
+appending to it, which would have broken Data API access for `kickoff26`, `odyssey`, and
+`st_health`, other apps sharing this Supabase instance. Did the exposure via Dashboard (Settings →
+API → Exposed Schemas) instead, done manually by the user.
+
+**Pre-existing issues found during recon (before writing any code):**
+- `.env`'s `VITE_SUPABASE_URL` was set to a Dashboard link
+  (`https://supabase.com/dashboard/project/lbbnvjkuueeeqfgtwzmu`) instead of the actual API
+  endpoint (`https://lbbnvjkuueeeqfgtwzmu.supabase.co`) — the client would have failed to connect.
+  Fixed.
+- `.env` was untracked but not gitignored — a stray `git add -A` could have leaked credentials.
+  Added `.env` to `.gitignore`.
+- This Supabase project is shared infrastructure, not Vanity-Magazine-only: `public` schema hosts
+  Odyssey's tables (`exercises`, `workout_sessions`, `session_sets`), confirming schema isolation
+  via `vanitymagazine` was the right call. Those Odyssey tables have RLS fully disabled — flagged
+  per Supabase's own security advisor, left untouched (out of scope, risk of breaking Odyssey).
+
+**What changed:**
+- Migration: `supabase/migrations/20260706070134_create_vanitymagazine_schema.sql` — creates the
+  `vanitymagazine` schema and 3 tables (see CLAUDE.md §5 for finalized column-level detail).
+  Column names are `snake_case` (Postgres convention) vs. CLAUDE.md's original camelCase field
+  names — naming-convention translation only, not a scope change.
+  - `now` is intentionally left unseeded (singleton enforced via `CHECK (id = 1)`) so the
+    round-trip test's insert/delete doesn't collide with a pre-existing row. Session 4's admin
+    form must `upsert` on `id = 1`, not assume a row exists.
+  - RLS enabled on all 3 tables with one permissive `"allow all"` policy each
+    (`USING (true) WITH CHECK (true)`) — intentional per spec (single-user app, unlisted URL is
+    the real boundary). Supabase's advisor correctly flags this as `rls_policy_always_true`;
+    expected, not a bug.
+  - Explicit grants: `GRANT USAGE ON SCHEMA vanitymagazine` + `SELECT, INSERT, UPDATE, DELETE` on
+    all tables to `anon`/`authenticated`, plus `ALTER DEFAULT PRIVILEGES` so future tables in this
+    schema inherit the same grants automatically.
+- `src/lib/supabaseClient.ts` — schema-scoped client via `createClient(url, key, { db: { schema:
+  'vanitymagazine' } })`, so call sites never need to repeat `.schema('vanitymagazine')`.
+- `src/types/supabase.ts` — hand-written types mirroring the migration exactly. Supabase MCP's
+  `generate_typescript_types` tool only covers the `public` schema on this shared project (no
+  schema parameter available), and the Supabase CLI's `--schema` flag needs an access token/login
+  this session didn't set up — hand-writing was simpler and just as accurate since the migration
+  SQL is the source of truth either way.
+- `.env`: fixed `VITE_SUPABASE_URL`; added to `.gitignore`.
+
+**Verification:**
+- `npm run build` — 0 errors.
+- Round-trip test (temporary script, not committed): insert into `now` → select it back → delete
+  → confirm table empty again. Passed end-to-end against the live project, proving the client,
+  schema routing, RLS, and grants all work together — not just that the SQL ran.
+- Hit a real blocker mid-verification: even after the Dashboard exposure change, PostgREST
+  returned `PGRST106: Invalid schema: vanitymagazine` — the change hadn't taken effect yet. After
+  the user confirmed via direct SQL that `pgrst.db_schemas` now included `vanitymagazine` (along
+  with `odyssey` and `st_health`, added in the same pass), retrying hit a second error,
+  `PGRST205: Could not find the table 'vanitymagazine.now' in the schema cache` — the schema was
+  now recognized but PostgREST's schema cache hadn't picked up its tables. Running
+  `NOTIFY pgrst, 'reload schema'` (a safe, non-destructive cache refresh — distinct from the
+  rejected `ALTER ROLE` approach) resolved it; the round-trip test then passed cleanly.
+- Confirmed `ipl2026` still works after the exposure change (`HTTP 200` on `ipl2026.matches`).
+  `kickoff26` returns `permission denied for schema kickoff26` — verified via direct SQL
+  (`has_schema_privilege`) that `anon`/`authenticated` have never had `USAGE` on that schema at
+  all, independent of anything changed today. Pre-existing gap in `kickoff26`'s own setup, not
+  caused by this session, not fixed here.
+
+**Next:** Session 4 — build `/admin` entry form (add Blog post, edit Learning items, edit Now
+widget) using react-hook-form + zod against Supabase.
