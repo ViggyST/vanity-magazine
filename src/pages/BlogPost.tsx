@@ -2,40 +2,46 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
-import { getPostBySlug, getProjectBySlug } from '@/data/seedData';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
+import { seedProjects } from '@/data/seedData';
+import { Skeleton } from '@/components/ui/skeleton';
 
 /**
  * Blog post detail page
  * Reading-optimized width (~680px)
  * Markdown content rendered with prose styling
  * Optional linked project reference
+ * Reads from vanitymagazine.blog by slug (Session 5) -- single source of truth.
  */
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  const post = slug ? getPostBySlug(slug) : undefined;
-  const linkedProject = post?.projectId ? getProjectBySlug(post.projectId) : undefined;
 
-  if (!post) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-display-md mb-4">Post Not Found</h1>
-          <Link to="/blog" className="text-primary hover:text-primary/80">
-            ← Back to Blog
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const { data: post, isLoading, isError } = useQuery({
+    queryKey: ['blog-post', slug],
+    enabled: !!slug,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('blog')
+        .select('*')
+        .eq('slug', slug as string)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
 
-  const formattedDate = format(new Date(post.publishedOn), 'MMMM d, yyyy');
+  // linked_project stores a Project.id (per CLAUDE.md §5), so look up by id, not slug.
+  const linkedProject = post?.linked_project
+    ? seedProjects.find((p) => p.id === post.linked_project)
+    : undefined;
 
   // Simple markdown-like rendering (convert headers and paragraphs)
   const renderContent = (content: string) => {
     const lines = content.split('\n');
     const elements: JSX.Element[] = [];
     let currentParagraph: string[] = [];
-    
+
     const flushParagraph = () => {
       if (currentParagraph.length > 0) {
         const text = currentParagraph.join(' ').trim();
@@ -52,7 +58,7 @@ export default function BlogPost() {
 
     lines.forEach((line, i) => {
       const trimmed = line.trim();
-      
+
       if (trimmed.startsWith('# ')) {
         flushParagraph();
         elements.push(
@@ -87,18 +93,66 @@ export default function BlogPost() {
         currentParagraph.push(trimmed);
       }
     });
-    
+
     flushParagraph();
     return elements;
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen">
+        <section className="pt-12 pb-8 px-6 lg:px-8 border-b border-border">
+          <div className="reading-width space-y-6">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-10 w-2/3" />
+          </div>
+        </section>
+        <section className="section-gap px-6 lg:px-8">
+          <div className="reading-width space-y-4">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-display-md mb-4">Couldn't load this post</h1>
+          <Link to="/blog" className="text-primary hover:text-primary/80">
+            ← Back to Blog
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-display-md mb-4">Post Not Found</h1>
+          <Link to="/blog" className="text-primary hover:text-primary/80">
+            ← Back to Blog
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const formattedDate = format(new Date(post.date), 'MMMM d, yyyy');
 
   return (
     <div className="min-h-screen">
       {/* Back link */}
       <section className="pt-8 px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
-          <Link 
-            to="/blog" 
+          <Link
+            to="/blog"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="size-4" />
@@ -122,7 +176,7 @@ export default function BlogPost() {
               </time>
               {post.tags.length > 0 && (
                 <div className="flex gap-2">
-                  {post.tags.map(tag => (
+                  {post.tags.map((tag) => (
                     <span key={tag} className="text-xs text-muted-foreground/70">
                       #{tag}
                     </span>
@@ -130,7 +184,7 @@ export default function BlogPost() {
                 </div>
               )}
             </div>
-            
+
             <h1 className="text-display-lg">
               {post.title}
             </h1>
@@ -152,7 +206,7 @@ export default function BlogPost() {
             {linkedProject && (
               <div className="pt-12 mt-12 border-t border-border">
                 <p className="text-sm text-muted-foreground mb-2">Related Project</p>
-                <Link 
+                <Link
                   to={`/projects/${linkedProject.slug}`}
                   className="text-lg text-foreground hover:text-primary transition-colors"
                 >

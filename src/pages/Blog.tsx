@@ -1,13 +1,35 @@
 import { motion } from 'framer-motion';
-import { seedPosts } from '@/data/seedData';
-import { PostCard } from '@/components/blog/PostCard';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
+import { PostCard, type PostSummary } from '@/components/blog/PostCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 /**
  * Blog page - List of blog posts (docs)
  * Kino-clean: title + date + tags
  * Clean typography, generous whitespace
+ * Reads from vanitymagazine.blog (Session 5) -- single source of truth, not the static seedData array.
  */
 export default function Blog() {
+  const { data: posts, isLoading, isError } = useQuery({
+    queryKey: ['blog-posts'],
+    queryFn: async (): Promise<PostSummary[]> => {
+      const { data, error } = await supabase
+        .from('blog')
+        .select('id, title, slug, date, tags, excerpt')
+        .order('date', { ascending: false });
+      if (error) throw error;
+      return data.map((row) => ({
+        id: row.id,
+        title: row.title,
+        slug: row.slug,
+        publishedOn: row.date,
+        tags: row.tags,
+        excerpt: row.excerpt,
+      }));
+    },
+  });
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -31,12 +53,33 @@ export default function Blog() {
       {/* Posts List */}
       <section className="section-gap px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
-          {seedPosts.length > 0 ? (
+          {isLoading ? (
+            <div className="space-y-8">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="py-8 border-b border-border/60 space-y-3">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 w-2/3" />
+                  <Skeleton className="h-4 w-full max-w-lg" />
+                </div>
+              ))}
+            </div>
+          ) : isError ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center py-24"
+            >
+              <p className="text-muted-foreground text-body-lg">
+                Couldn't load posts right now. Try refreshing the page.
+              </p>
+            </motion.div>
+          ) : posts && posts.length > 0 ? (
             <div>
-              {seedPosts.map((post, index) => (
-                <PostCard 
-                  key={post.id} 
-                  post={post} 
+              {posts.map((post, index) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
                   index={index}
                 />
               ))}

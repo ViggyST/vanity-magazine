@@ -11,6 +11,7 @@ import { ProjectCard } from '@/components/projects/ProjectCard';
 import { PostCard } from '@/components/blog/PostCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { HeroSpotlight } from '@/components/home/HeroSpotlight';
+import { NowWidget } from '@/components/home/NowWidget';
 import { Button } from '@/components/ui/button';
 import heroImage from '@/assets/hero-home.jpg';
 
@@ -130,11 +131,14 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Now Widget */}
+      <NowWidget />
+
       {/* Featured Projects Section */}
       <section className="section-gap-lg border-t border-border/40">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <SectionHeader 
-            title="Featured Projects" 
+          <SectionHeader
+            title="Featured Projects"
             subtitle="A selection of what I'm working on"
           />
 

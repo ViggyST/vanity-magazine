@@ -17,6 +17,8 @@ const Projects = lazy(() => import("./pages/Projects"));
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Learning = lazy(() => import("./pages/Learning"));
+const Now = lazy(() => import("./pages/Now"));
 const About = lazy(() => import("./pages/About"));
 const Login = lazy(() => import("./pages/Login"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -67,6 +69,22 @@ function AnimatedRoutes() {
           element={
             <PageTransition>
               <BlogPost />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/learning"
+          element={
+            <PageTransition>
+              <Learning />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/now"
+          element={
+            <PageTransition>
+              <Now />
             </PageTransition>
           }
         />

@@ -117,22 +117,25 @@ open per the original "no auth to browse" intent.
 
 ## 7. Current Status
 
-**Last completed: Session 4 (2026-07-06) — auth added, RLS tightened, admin forms working.**
-RLS on all 3 `vanitymagazine` tables now: `SELECT` open to `anon`/`authenticated` (public browsing
-unaffected), `INSERT`/`UPDATE`/`DELETE` restricted to `authenticated` only (migration
-`supabase/migrations/20260706080510_tighten_vanitymagazine_write_rls.sql`) — see §6 amendment for
-why. Real login page (`supabase.auth.signInWithPassword()`, single existing user, no signup/reset
-UI) gates `/admin`; 3 working forms (Blog Post, Learning Roadmap, Now) write to Supabase with
-toast feedback. Found and fixed a real bug along the way: client-side `navigate()` between two
-lazy-loaded routes got stuck indefinitely on the shared Suspense fallback (an
-`AnimatePresence`/`Suspense` interaction issue in `App.tsx`'s routing, likely pre-existing, not
-refactored — out of scope) — worked around by using a hard `window.location.href` redirect for
-both the login and logout transitions. Verified: anon writes now `401`, anon reads still `200`;
-RLS policies confirmed via `pg_policies`; `npm run build` and `tsc --noEmit` both 0 errors. Could
-not test a full successful login end-to-end (would require the real password). Full detail:
-SESSION_LOG.md.
-**Next: Session 5** — build `/blog` (mixed feed), `/learning` (Kanban board), `/now` page + Home
-widget, reading live from Supabase.
+**Last completed: Session 5 (2026-07-07) — `/blog`, `/learning`, `/now` all live on Supabase.**
+Migrated the 3 static `seedData.ts` posts into `vanitymagazine.blog`
+(`supabase/migrations/20260707063808_migrate_static_posts_to_blog.sql`) — table now has those 3
+plus "Stock Market Agent" (Session 4's test post), 4 rows total. `/blog` and `/blog/:slug` both
+now read from Supabase instead of the static array (`seedData.ts` itself untouched —
+`ProjectDetail.tsx` still uses `getPostForProject()` from it). New pages `/learning` (3-column
+Kanban: Learned/Learning/Planned) and `/now` (singleton snapshot), plus a compact Now widget on
+Home above Featured Projects (`src/hooks/useNowRecord.ts` shared by both). All 3 data routes have
+loading/empty/error states. Incidentally fixed a pre-existing bug while rewriting `BlogPost.tsx`:
+the "Related Project" link was calling `getProjectBySlug(post.projectId)` — a slug-lookup function
+given an id — so it silently never resolved; now looks up by `id` directly, matching what
+`linked_project` actually stores per §5. `npm run build` and `tsc --noEmit` both 0 errors; all 4
+views (`/blog`, `/learning`, `/now`, Home) verified in-browser with no console errors, including
+the currently-empty-table empty states. Full detail: SESSION_LOG.md.
+**Known gap, not fixed this session:** Home's "Latest Posts" section still reads the static
+`seedData.ts` array (`getLatestPosts()`), not `vanitymagazine.blog` — will silently drift out of
+sync with `/blog` now that the latter is DB-backed. Only `/blog` itself was in Session 5's scope.
+**Next: Session 6** — thumbnails: real screenshots for live apps, generated abstract thumbnails
+for code/backend projects, populate `thumbnail` field across all 15 projects.
 
 ## 8. Tool Division
 

@@ -1,10 +1,19 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Post } from '@/data/seedData';
 import { format } from 'date-fns';
 
+/** Fields PostCard actually renders -- any post-like source (static seedData or Supabase) can supply these. */
+export interface PostSummary {
+  id: string;
+  title: string;
+  slug: string;
+  publishedOn: string;
+  tags: string[];
+  excerpt: string;
+}
+
 interface PostCardProps {
-  post: Post;
+  post: PostSummary;
   index?: number;
   variant?: 'default' | 'compact';
 }

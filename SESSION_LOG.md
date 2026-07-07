@@ -233,3 +233,87 @@ than trusting client-side transition state).
 
 **Next:** Session 5 — build `/blog` (mixed feed), `/learning` (Kanban board), `/now` page + Home
 widget, reading live from Supabase.
+
+---
+
+## Session 5 — 2026-07-07
+
+**Scope:** Migrate the 3 static blog posts into `vanitymagazine.blog`; rebuild `/blog` to read from
+Supabase instead of the static array; build `/learning` (Kanban board) and `/now` (singleton
+snapshot) as new pages; add a compact Now widget to Home; loading/empty/error states on all 3
+data-fetching routes.
+
+**Data migration:**
+- Migration `supabase/migrations/20260707063808_migrate_static_posts_to_blog.sql` — one-time
+  `INSERT ... ON CONFLICT (slug) DO NOTHING` of the 3 posts from `seedData.ts`'s `seedPosts` array.
+  `post_type` didn't exist on the old static shape, so values are inferred from each post's
+  content/tags (`thought` × 2, `essay` × 1) — a judgment call, editable via the admin form.
+  `linked_project` carried over as `'1'` for the one post that had a `projectId`.
+- `seedData.ts` itself is untouched — `seedPosts`/`getPostForProject`/etc. still exist because
+  `ProjectDetail.tsx` still reads `getPostForProject()` from the static array for its "related
+  post" display, which is out of this session's scope.
+- Confirmed post-migration: `vanitymagazine.blog` has 4 rows total — the 3 migrated posts plus
+  "Stock Market Agent" (the test post written via Session 4's admin form).
+
+**What changed:**
+- `src/components/blog/PostCard.tsx` — decoupled from seedData's `Post` type; now takes a local
+  `PostSummary` interface (id/title/slug/publishedOn/tags/excerpt, exactly the fields it renders).
+  Visual output is unchanged; both the static `Post` shape (still used by `Home.tsx`'s "Latest
+  Posts" section) and the new Supabase-mapped shape satisfy it structurally.
+- `src/pages/Blog.tsx` — now fetches from `vanitymagazine.blog` via `@tanstack/react-query`
+  instead of importing `seedPosts`. Loading state (skeleton), error state, and the original empty
+  state ("No posts yet.") all present.
+- `src/pages/BlogPost.tsx` — **scope extension beyond the literal ask**: the task only mentioned
+  rebuilding `/blog`, but `/blog/:slug` (`BlogPost.tsx`) also only read from the static
+  `getPostBySlug()`. Left as-is, clicking into any Supabase-only post (including the pre-existing
+  "Stock Market Agent" test post, or any of the 3 migrated posts) would show "Post Not Found" —
+  the feature would be broken end-to-end. Rebuilt this page to fetch by slug from
+  `vanitymagazine.blog` too, with its own loading/error/not-found states. While rewriting this,
+  fixed a small pre-existing bug: the old code called `getProjectBySlug(post.projectId)` — passing
+  a project *id* (e.g. `'1'`) into a function that filters by *slug* — so the "Related Project"
+  link was silently always empty for every post that had one. Now resolves by `id` directly
+  against `seedProjects`, matching CLAUDE.md §5's own description of what `linked_project` stores.
+- `src/pages/Learning.tsx` (new) — 3-column Kanban board (Learned / Learning / Planned), fetches
+  `vanitymagazine.learning_roadmap` with an embedded `blog(title, slug)` select (via the real FK
+  from Session 3) to link each roadmap item to its related post. Grouping by status happens
+  client-side. Per-column skeleton loading state, per-column "Nothing here yet." when a column is
+  empty, and a page-level error state.
+- `src/pages/Now.tsx` (new) — singleton snapshot: Currently Building / Currently Learning /
+  Recently Shipped as bulleted lists, "Last updated" formatted from `last_updated`. Empty state
+  ("Nothing to show yet — check back soon.") for the "no row exists" case (table is empty per
+  Session 3/4), separate from the "row exists but a given list is empty" per-section case
+  ("Nothing here yet.").
+- `src/hooks/useNowRecord.ts` (new) — shared `now` query (same `queryKey` used by both the page and
+  the widget, so react-query dedupes the network request rather than fetching twice).
+- `src/components/home/NowWidget.tsx` (new) — compact version on `Home.tsx`, above Featured
+  Projects. Shows up to 2 items per category with a "+N more" overflow and a link to the full
+  `/now` page. Renders nothing (`return null`) on fetch error rather than showing a broken banner
+  on the homepage. Has its own distinct empty-state design (dashed border, single line of text)
+  since the table currently has 0 rows — this is the one most worth a second look since there's no
+  real content yet to judge it against.
+- `src/App.tsx` + `src/components/layout/Header.tsx` — added `/learning` and `/now` routes and nav
+  links (both pages would otherwise be unreachable from the UI).
+
+**Verification:**
+- `npm run build` — 0 errors. `npx tsc --noEmit` — 0 errors.
+- Browser-verified all 4 views against the live (currently sparse) data:
+  - `/blog` — shows all 4 posts (3 migrated + Stock Market Agent) sorted by date, no console
+    errors. Clicked into `building-personal-vault`: full post content renders, tags render, and
+    the "Related Project" link now correctly shows "Vanity Magazine" (confirming the bug fix
+    above).
+  - `/learning` — renders the 3-column board correctly with `learning_roadmap` empty; each column
+    independently shows "Nothing here yet." No console errors.
+  - `/now` — renders the "no row yet" empty state cleanly, no console errors.
+  - Home — Now widget's empty state renders in place above Featured Projects (confirmed via
+    `preview_inspect`: `reactComponent: "NowWidget"`, visible, correct text); no console errors.
+- Console warnings present on all pages are pre-existing React Router v7 future-flag notices,
+  unrelated to this session's changes.
+
+**Discovered but not fixed (out of explicit scope):** Home.tsx's "Latest Posts" section still
+reads `getLatestPosts()` from the static `seedData.ts` array, not `vanitymagazine.blog` — now that
+`/blog` itself is DB-backed, this section will silently drift out of sync (it'll never show "Stock
+Market Agent" or anything added via the admin form going forward). Only `/blog` was in scope this
+session; flagging this inconsistency for a future session rather than fixing it unasked.
+
+**Next:** Session 6 — thumbnails (real screenshots for live apps, generated abstract thumbnails
+for code/backend projects), populate `thumbnail` field across all 15 projects.
