@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
-import { PostCard, type PostSummary } from '@/components/blog/PostCard';
+import { useBlogPosts } from '@/hooks/useBlogPosts';
+import { PostCard } from '@/components/blog/PostCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 /**
@@ -11,24 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
  * Reads from vanitymagazine.blog (Session 5) -- single source of truth, not the static seedData array.
  */
 export default function Blog() {
-  const { data: posts, isLoading, isError } = useQuery({
-    queryKey: ['blog-posts'],
-    queryFn: async (): Promise<PostSummary[]> => {
-      const { data, error } = await supabase
-        .from('blog')
-        .select('id, title, slug, date, tags, excerpt')
-        .order('date', { ascending: false });
-      if (error) throw error;
-      return data.map((row) => ({
-        id: row.id,
-        title: row.title,
-        slug: row.slug,
-        publishedOn: row.date,
-        tags: row.tags,
-        excerpt: row.excerpt,
-      }));
-    },
-  });
+  const { data: posts, isLoading, isError } = useBlogPosts();
 
   return (
     <div className="min-h-screen">

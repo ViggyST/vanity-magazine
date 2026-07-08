@@ -2,17 +2,18 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { siteConfig } from '@/data/siteConfig';
-import { 
-  getFeaturedProjects, 
-  getProjectsByStatus, 
-  getLatestPosts 
+import {
+  getFeaturedProjects,
+  getProjectsByStatus,
 } from '@/data/seedData';
+import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { PostCard } from '@/components/blog/PostCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { HeroSpotlight } from '@/components/home/HeroSpotlight';
 import { NowWidget } from '@/components/home/NowWidget';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import heroImage from '@/assets/hero-home.jpg';
 
 /**
@@ -23,8 +24,9 @@ import heroImage from '@/assets/hero-home.jpg';
 export default function Home() {
   const featuredProjects = getFeaturedProjects();
   const wipProjects = getProjectsByStatus('WIP');
-  const latestPosts = getLatestPosts(3);
-  
+  const { data: posts, isLoading: postsLoading, isError: postsError } = useBlogPosts();
+  const latestPosts = (posts ?? []).slice(0, 3);
+
   // Get first Live project for Spotlight (exclude from featured if same)
   const liveProjects = getProjectsByStatus('Live');
   const spotlightProject = liveProjects.find(
@@ -203,14 +205,33 @@ export default function Home() {
           />
 
           <div>
-            {latestPosts.map((post, index) => (
-              <PostCard 
-                key={post.id} 
-                post={post} 
-                index={index}
-                variant="compact"
-              />
-            ))}
+            {postsLoading ? (
+              <div className="space-y-4">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex items-baseline justify-between gap-4 py-4 border-b border-border/60">
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-3 w-16 shrink-0" />
+                  </div>
+                ))}
+              </div>
+            ) : postsError ? (
+              <p className="text-muted-foreground text-body py-8 text-center">
+                Couldn't load posts right now.
+              </p>
+            ) : latestPosts.length > 0 ? (
+              latestPosts.map((post, index) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  index={index}
+                  variant="compact"
+                />
+              ))
+            ) : (
+              <p className="text-muted-foreground text-body py-8 text-center">
+                No posts yet.
+              </p>
+            )}
           </div>
 
           {/* View All Link */}

@@ -309,11 +309,18 @@ data-fetching routes.
 - Console warnings present on all pages are pre-existing React Router v7 future-flag notices,
   unrelated to this session's changes.
 
-**Discovered but not fixed (out of explicit scope):** Home.tsx's "Latest Posts" section still
-reads `getLatestPosts()` from the static `seedData.ts` array, not `vanitymagazine.blog` — now that
-`/blog` itself is DB-backed, this section will silently drift out of sync (it'll never show "Stock
-Market Agent" or anything added via the admin form going forward). Only `/blog` was in scope this
-session; flagging this inconsistency for a future session rather than fixing it unasked.
+**Addendum (same session, 2026-07-07):** fixed the "Latest Posts" gap flagged above. Extracted
+`Blog.tsx`'s Supabase fetch into a shared hook, `src/hooks/useBlogPosts.ts` (same pattern as
+`useNowRecord.ts`), and pointed both `Blog.tsx` and `Home.tsx`'s "Latest Posts" section at it
+instead of `getLatestPosts()` from static `seedData.ts` — `Home.tsx` now slices the shared result
+to 3 rather than querying separately. Added matching loading (skeleton)/error/empty states to the
+Home section, consistent with the rest of Session 5. `npm run build` — 0 errors;
+`npx tsc --noEmit` — 0 errors. Browser-verified: Home's "Latest Posts" now shows the same posts as
+`/blog` (Stock Market Agent, Building a Personal Vault, On Project Statuses — sliced to 3, sorted
+by date), `/blog` unaffected, no console errors on either page. `seedData.ts`'s `getLatestPosts()`
+export is now unused by the app but left in place (not deleted) — same reasoning as
+`getPostForProject()`: out of scope to touch seedData.ts's exports this session, and harmless to
+leave.
 
 **Next:** Session 6 — thumbnails (real screenshots for live apps, generated abstract thumbnails
 for code/backend projects), populate `thumbnail` field across all 15 projects.
