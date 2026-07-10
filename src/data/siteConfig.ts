@@ -26,9 +26,9 @@ export const siteConfig = {
   
   // About page content
   about: {
-    bio: `Add your bio here. What do you do? What are you passionate about? 
-    
-This site serves as a personal vault — a place to track projects, document learnings, and keep ideas alive.`,
+    bio: `Product Manager in fintech. I spend my day job on specs, funnels, and metrics — and my off-hours building things: fantasy sports tools, AI agents, personal automation, the occasional dive into ML I have no business doing on a weeknight.
+
+This site is a private vault — a place to track what I'm building, document what I'm learning, and keep half-finished ideas from disappearing into a notes app graveyard.`,
   },
   
   // Project categories (locked for MVP)
